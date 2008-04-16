@@ -4,8 +4,8 @@ SUBDIRS = pics
 INCLUDES = $(DBUS_CFLAGS) $(HAL_CFLAGS) $(all_includes)
 
 # these are the headers for your project
-noinst_HEADERS = krypt.h kryptapp.h kryptconf.h kryptdevitem.h kryptdialog.h \
-	kryptglobal.h kryptsystray.h
+noinst_HEADERS = halbackend.h kryptapp.h kryptconf.h kryptdevitem.h \
+	kryptdialog.h kryptglobal.h kryptsystray.h
 
 # let automoc handle all of the meta source files (moc)
 METASOURCES = AUTO
@@ -23,12 +23,12 @@ messages: rc.cpp
 bin_PROGRAMS = krypt
 
 # the application source, library search path, and link libraries
-krypt_SOURCES = confdialog.ui decryptdialog.ui krypt.cpp kryptapp.cpp \
+krypt_SOURCES = confdialog.ui decryptdialog.ui halbackend.cpp kryptapp.cpp \
 	kryptconf.cpp kryptdevitem.cpp kryptdialog.cpp kryptsystray.cpp main.cpp
 krypt_LDFLAGS = $(KDE_RPATH) $(all_libraries)
 krypt_LDADD = $(DBUS_LIBS) -ldbus-qt-1 $(HAL_LIBS) $(LIB_KDEUI)
 
-# this is where the desktop file will go 
+# this is where the desktop file will go
 shelldesktopdir   = $(kde_appsdir)/Utilities
 shelldesktop_DATA = krypt.desktop
 

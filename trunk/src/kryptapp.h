@@ -1,6 +1,6 @@
 /***************************************************************************
- *   Copyright (C) 2007, 2008 by Jakub Schmidtke                                 *
- *   sjakub@users.berlios.de                                                      *
+ *   Copyright (C) 2007, 2008 by Jakub Schmidtke                           *
+ *   sjakub@users.berlios.de                                               *
  *                                                                         *
  *   This program is free software; you can redistribute it and/or modify  *
  *   it under the terms of the GNU General Public License as published by  *
@@ -21,12 +21,16 @@
 #ifndef _KRYPT_APP_H_
 #define _KRYPT_APP_H_
 
+#ifdef HAVE_CONFIG_H
+#include <config.h>
+#endif
+
 #include <kconfig.h>
 #include <kuniqueapplication.h>
 
 class KryptSystemTray;
 
-class Krypt;
+class HALBackend;
 
 class KryptApp : public KUniqueApplication
 {
@@ -49,7 +53,7 @@ class KryptApp : public KUniqueApplication
 	protected:
 		KConfig _cfg;
 		KryptSystemTray *_tray;
-		Krypt* _krypt;
+                HALBackend* _halBackend;
 		bool _showPopUp;
 		QStringList _devsKnown;
 		QStringList _devsIgnored;

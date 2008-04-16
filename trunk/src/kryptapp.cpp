@@ -1,6 +1,6 @@
 /***************************************************************************
- *   Copyright (C) 2007, 2008 by Jakub Schmidtke                                 *
- *   sjakub@users.berlios.de                                                      *
+ *   Copyright (C) 2007, 2008 by Jakub Schmidtke                           *
+ *   sjakub@users.berlios.de                                               *
  *                                                                         *
  *   This program is free software; you can redistribute it and/or modify  *
  *   it under the terms of the GNU General Public License as published by  *
@@ -26,8 +26,8 @@
 #include "kryptapp.h"
 #include "kryptapp.moc"
 
+#include "halbackend.h"
 #include "kryptsystray.h"
-#include "krypt.h"
 #include "kryptdialog.h"
 
 KryptApp::KryptApp(): _cfg("kryptrc")
@@ -38,44 +38,42 @@ KryptApp::KryptApp(): _cfg("kryptrc")
 
 	_tray->show();
 
-	_krypt = new Krypt();
+	_halBackend = new HALBackend();
 
-	if (!_krypt->isOK()) return;
+	if (!_halBackend->isOK()) return;
 
-	connect (_krypt, SIGNAL(sigNewInfo(const QString&)),
+	connect (_halBackend, SIGNAL(sigNewInfo(const QString&)),
 		 this, SLOT(slotNewInfo(const QString&)));
 
-	connect (_krypt, SIGNAL(sigDevNew(const QString&)),
+	connect (_halBackend, SIGNAL(sigDevNew(const QString&)),
 		 this, SLOT(slotDevNew(const QString&)));
 
-	connect (_krypt, SIGNAL(sigDevMapped(const QString&)),
+	connect (_halBackend, SIGNAL(sigDevMapped(const QString&)),
 		 this, SLOT(slotDevMapped(const QString&)));
 
-	connect (_krypt, SIGNAL(sigDevUnmapped(const QString&)),
+	connect (_halBackend, SIGNAL(sigDevUnmapped(const QString&)),
 		 this, SLOT(slotDevUnmapped(const QString&)));
 
-	connect (_krypt, SIGNAL(sigDevMounted(const QString&)),
+	connect (_halBackend, SIGNAL(sigDevMounted(const QString&)),
 		 this, SLOT(slotDevMounted(const QString&)));
 
-	connect (_krypt, SIGNAL(sigDevUmounted(const QString&)),
+	connect (_halBackend, SIGNAL(sigDevUmounted(const QString&)),
 		 this, SLOT(slotDevUmounted(const QString&)));
 
-	connect (_krypt, SIGNAL(sigError(const QString&, const QString&, const QString&)),
+	connect (_halBackend, SIGNAL(sigError(const QString&, const QString&, const QString&)),
 		 this, SLOT(slotError(const QString&, const QString&, const QString&)));
 
-	connect (_krypt, SIGNAL(sigDevRemoved(const QString&)),
+	connect (_halBackend, SIGNAL(sigDevRemoved(const QString&)),
 		 _tray, SLOT(slotDeviceRemoved(const QString&)));
 
-// 	void sigMountDevice(const QString &udi);
-
 	connect (_tray, SIGNAL(sigUmountDevice(const QString&)),
-		 _krypt, SLOT(slotUmountDevice(const QString&)));
+		 _halBackend, SLOT(slotUmountDevice(const QString&)));
 
 	connect (_tray, SIGNAL(sigMountDevice(const QString&)),
-		 _krypt, SLOT(slotMountDevice(const QString&)));
+		 _halBackend, SLOT(slotMountDevice(const QString&)));
 
 	connect (_tray, SIGNAL(sigEncryptDevice(const QString&)),
-		 _krypt, SLOT(slotRemoveDevice(const QString&)));
+		 _halBackend, SLOT(slotRemoveDevice(const QString&)));
 
 	connect (_tray, SIGNAL(sigDecryptDevice(const QString&)),
 		 this, SLOT(slotPopPassDialog(const QString&)));
@@ -83,7 +81,7 @@ KryptApp::KryptApp(): _cfg("kryptrc")
 	connect (_tray, SIGNAL(sigConfigChanged()),
 		 this, SLOT(slotLoadConfig()));
 
-	_krypt->initScan();
+	_halBackend->initScan();
 }
 
 QString KryptApp::getUdiDesc(const QString& udi)
@@ -94,7 +92,7 @@ QString KryptApp::getUdiDesc(const QString& udi)
 	QString type;
 	QString mountPoint;
 
-	if (!_krypt->getDeviceInfo(udi, vendor, product, blockDev, type, mountPoint)) return QString();
+	if (!_halBackend->getDeviceInfo(udi, vendor, product, blockDev, type, mountPoint)) return QString();
 
 	return QString("%1 %2 (%3)").arg(vendor).arg(product).arg(blockDev);
 }
@@ -165,20 +163,20 @@ void KryptApp::slotPopPassDialog(const QString &udi)
 	QString type;
 	QString mountPoint;
 
-	if (!_krypt->getDeviceInfo(udi, vendor, product, blockDev, type, mountPoint)) return;
+	if (!_halBackend->getDeviceInfo(udi, vendor, product, blockDev, type, mountPoint)) return;
 
 	KryptDialog* dialog = new KryptDialog ( udi, vendor, product, blockDev, type );
 
 	connect ( dialog, SIGNAL ( sigPassword ( char *, const char * ) ),
-		  _krypt, SLOT ( slotSendPassword ( char *, const char * ) ) );
+		  _halBackend, SLOT ( slotSendPassword ( char *, const char * ) ) );
 
-	connect ( _krypt, SIGNAL ( sigPassError ( const QString&, const QString&, const QString& ) ),
+	connect ( _halBackend, SIGNAL ( sigPassError ( const QString&, const QString&, const QString& ) ),
 		  dialog, SLOT ( slotPassError ( const QString&, const QString&, const QString& ) ) );
 
-	connect ( _krypt, SIGNAL ( sigDevRemoved ( const QString& ) ),
+	connect ( _halBackend, SIGNAL ( sigDevRemoved ( const QString& ) ),
 		  dialog, SLOT ( slotDevRemoved ( const QString& ) ) );
 
-	connect ( _krypt, SIGNAL ( sigDevMapped ( const QString& ) ),
+	connect ( _halBackend, SIGNAL ( sigDevMapped ( const QString& ) ),
 		  dialog, SLOT ( slotDevMapped ( const QString& ) ) );
 
 	dialog->show();

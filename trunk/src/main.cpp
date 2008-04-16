@@ -1,6 +1,6 @@
 /***************************************************************************
- *   Copyright (C) 2007, 2008 by Jakub Schmidtke                                 *
- *   sjakub@users.berlios.de                                                      *
+ *   Copyright (C) 2007, 2008 by Jakub Schmidtke                           *
+ *   sjakub@users.berlios.de                                               *
  *                                                                         *
  *   This program is free software; you can redistribute it and/or modify  *
  *   it under the terms of the GNU General Public License as published by  *
@@ -26,7 +26,11 @@
 
 #include "kryptapp.h"
 
-static const char kryptVersion[] = "0.1";
+static const char* krypt_version  = I18N_NOOP(KRYPT_VERSION_STRING);
+static const char* krypt_descr    = I18N_NOOP("LUKS front-end for KDE");
+static const char* krypt_copy     = I18N_NOOP("Copyright (C) 2007, 2008 Jakub Schmidtke");
+static const char* krypt_webpage  = I18N_NOOP("http://krypt.berlios.de");
+
 static const KCmdLineOptions options[] =
 {
 	{ "login", I18N_NOOP("Application is being auto-started at KDE session start"), 0L },
@@ -35,9 +39,15 @@ static const KCmdLineOptions options[] =
 
 int main(int argc, char **argv)
 {
-	KAboutData aboutData("krypt", I18N_NOOP("Krypt"), kryptVersion, I18N_NOOP("Krypt"), KAboutData::License_GPL, "(c) 2007, 2008 Jakub Schmidkte", 0L, "");
+	KAboutData aboutData("krypt", I18N_NOOP("Krypt"),
+                             krypt_version, krypt_descr, KAboutData::License_GPL,
+                             krypt_copy, 0L, krypt_webpage);
 	aboutData.addAuthor( "Jakub Schmidtke", 0, "sjakub@users.berlios.de" );
 	aboutData.setProductName("krypt");
+        aboutData.setTranslator(I18N_NOOP("_: NAME OF TRANSLATORS\\nYour names"),
+                                I18N_NOOP("_: EMAIL OF TRANSLATORS\\nYour emails"));
+        aboutData.setBugAddress(I18N_NOOP("krypt-bugs@lists.berlios.de"));
+
 	KGlobal::locale()->setMainCatalogue("krypt");
 
 	KCmdLineArgs::init(argc,argv,&aboutData);

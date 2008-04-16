@@ -1,6 +1,6 @@
 /***************************************************************************
- *   Copyright (C) 2007, 2008 by Jakub Schmidtke                                 *
- *   sjakub@users.berlios.de                                                      *
+ *   Copyright (C) 2007, 2008 by Jakub Schmidtke                           *
+ *   sjakub@users.berlios.de                                               *
  *                                                                         *
  *   This program is free software; you can redistribute it and/or modify  *
  *   it under the terms of the GNU General Public License as published by  *
@@ -23,7 +23,7 @@
 #include <kaction.h>
 #include <kapplication.h>
 #include <kdebug.h>
-//#include <khelpmenu.h>
+#include <khelpmenu.h>
 #include <kiconloader.h>
 #include <klocale.h>
 #include <kpopupmenu.h>
@@ -35,7 +35,6 @@
 
 KryptSystemTray::KryptSystemTray(KConfig *cfg, QWidget* parent, const char *name)
 	: KSystemTray(parent, name), _confDlg(0), _cfg(cfg), _nextID(1)
-//	, _help(new KHelpMenu(this, KGlobal::instance()->aboutData(), false, actionCollection()))
 {
 	loadConfig();
 
@@ -191,7 +190,16 @@ void KryptSystemTray::contextMenuAboutToShow(KPopupMenu* menu)
 							 actionCollection() );
 	actPrefs->plug( menu );
 
-// 	menu->insertItem(SmallIcon("help"),KStdGuiItem::help().text(), m_help->menu());
+        /* Help menu */
+        KHelpMenu* helpMenu = new KHelpMenu (this, KGlobal::instance ()->aboutData (), false);
+
+        helpMenu->menu ()->removeItemAt (KHelpMenu::menuHelpContents);
+        /* once the help menu is gone, remove the separator which is at position KHelpMenu::menuHelpContents now */
+        helpMenu->menu ()->removeItemAt (KHelpMenu::menuHelpContents);
+
+        menu->insertItem (SmallIcon ("help"), i18n ("&Help"), helpMenu->menu ());
+
+        menu->insertSeparator ();
 
 	KAction *quitAction = actionCollection()->action(KStdAction::name(KStdAction::Quit));
 	quitAction->plug(menu);

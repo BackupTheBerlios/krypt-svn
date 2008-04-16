@@ -1,6 +1,6 @@
 /***************************************************************************
- *   Copyright (C) 2007, 2008 by Jakub Schmidtke                                 *
- *   sjakub@users.berlios.de                                                      *
+ *   Copyright (C) 2007, 2008 by Jakub Schmidtke                           *
+ *   sjakub@users.berlios.de                                               *
  *                                                                         *
  *   This program is free software; you can redistribute it and/or modify  *
  *   it under the terms of the GNU General Public License as published by  *
@@ -25,7 +25,6 @@
 #include <ksystemtray.h>
 #include <kconfig.h>
 
-//class KHelpMenu;
 class KryptConf;
 
 class KryptSystemTray :  public KSystemTray
@@ -86,8 +85,6 @@ class KryptSystemTray :  public KSystemTray
 		bool _showEncrypt;
 		bool _showDecrypt;
 		bool _autoEncrypt;
-
-// 		KHelpMenu *_help;
 };
 
 #endif // _KRYPT_SYS_TRAY_H_

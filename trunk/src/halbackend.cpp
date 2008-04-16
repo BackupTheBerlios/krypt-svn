@@ -1,6 +1,6 @@
 /***************************************************************************
- *   Copyright (C) 2007, 2008 by Jakub Schmidtke                                 *
- *   sjakub@users.berlios.de                                                      *
+ *   Copyright (C) 2007, 2008 by Jakub Schmidtke                           *
+ *   sjakub@users.berlios.de                                               *
  *                                                                         *
  *   This program is free software; you can redistribute it and/or modify  *
  *   it under the terms of the GNU General Public License as published by  *
@@ -18,23 +18,23 @@
  *   51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.           *
  ***************************************************************************/
 
-#include "krypt.h"
-#include "krypt.moc"
+#include "halbackend.h"
+#include "halbackend.moc"
 
 #include <qfile.h>
 #include <kdebug.h>
 
 /* Static instance of this class, for static HAL callbacks */
-Krypt* Krypt::s_Krypt = 0;
+HALBackend* HALBackend::s_HALBackend = 0;
 
-Krypt::Krypt()
+HALBackend::HALBackend()
 		: QObject()
 		, _halContext ( 0 )
 		, _dBusQtConnection ( 0 )
 		, _dbus_connection ( 0 )
 
 {
-	s_Krypt = this;
+	s_HALBackend = this;
 	_dbusOK = false;
 	_halOK = false;
 
@@ -47,23 +47,23 @@ Krypt::Krypt()
 	_halOK = true;
 }
 
-Krypt::~Krypt()
+HALBackend::~HALBackend()
 {
 	if (_halOK) closeHAL();
 	if (_dbusOK) closeDBus();
 }
 
-bool Krypt::isOK()
+bool HALBackend::isOK()
 {
 	return _dbusOK && _halOK;
 }
 
-void Krypt::sendInfo(const QString& info)
+void HALBackend::sendInfo(const QString& info)
 {
 	emit sigNewInfo(info);
 }
 
-void Krypt::removeDevice ( const QString& udi )
+void HALBackend::removeDevice ( const QString& udi )
 {
 	if (luksToClear.contains(udi))
 	{
@@ -72,7 +72,7 @@ void Krypt::removeDevice ( const QString& udi )
 	}
 }
 
-void Krypt::modifyDevice ( const QString& udi, const QString& key, bool isAdded )
+void HALBackend::modifyDevice ( const QString& udi, const QString& key, bool isAdded )
 {
 	if (luksToClear.contains(udi))
 	{
@@ -126,7 +126,7 @@ void Krypt::modifyDevice ( const QString& udi, const QString& key, bool isAdded 
 	}
 }
 
-bool Krypt::getDeviceInfo(const QString& udi, QString &vendor, QString &product, QString &blockDevice, QString &type, QString &mountPoint)
+bool HALBackend::getDeviceInfo(const QString& udi, QString &vendor, QString &product, QString &blockDevice, QString &type, QString &mountPoint)
 {
 	if (!luksToClear.contains(udi)) return false;
 
@@ -147,7 +147,7 @@ bool Krypt::getDeviceInfo(const QString& udi, QString &vendor, QString &product,
 	return true;
 }
 
-void Krypt::addDevice ( const QString& udi )
+void HALBackend::addDevice ( const QString& udi )
 {
 	/* We don't deal with devices that do not expose their capabilities.
 	If we don't check this, we will get a lot of warning messages from libhal */
@@ -192,7 +192,7 @@ void Krypt::addDevice ( const QString& udi )
 	emit sigDevNew(udi);
 }
 
-void Krypt::slotUmountDevice( const QString& udi)
+void HALBackend::slotUmountDevice( const QString& udi)
 {
 	QString vol = luksToClear[udi];
 
@@ -235,7 +235,7 @@ void Krypt::slotUmountDevice( const QString& udi)
 
 	//kdDebug() << __func__ << ": OK" << endl;
 
-	if (!dbus_pending_call_set_notify(pcall, Krypt::cmdCallback, NULL, NULL)) {
+	if (!dbus_pending_call_set_notify(pcall, HALBackend::cmdCallback, NULL, NULL)) {
 		kdDebug() << __func__ << "(): Got some trouble while setting callback function..." << endl;
 		goto error;
 	}
@@ -253,7 +253,7 @@ error:
 	return;
 }
 
-void Krypt::slotMountDevice( const QString& udi)
+void HALBackend::slotMountDevice( const QString& udi)
 {
 	QString vol = luksToClear[udi];
 
@@ -308,7 +308,7 @@ void Krypt::slotMountDevice( const QString& udi)
 
 	//kdDebug() << __func__ << ": OK" << endl;
 
-	if (!dbus_pending_call_set_notify(pcall, Krypt::cmdCallback, NULL, NULL)) {
+	if (!dbus_pending_call_set_notify(pcall, HALBackend::cmdCallback, NULL, NULL)) {
 		kdDebug() << __func__ << "(): Got some trouble while setting callback function..." << endl;
 		goto error;
 	}
@@ -326,7 +326,7 @@ error:
 	return;
 }
 
-void Krypt::slotRemoveDevice ( const QString& udi )
+void HALBackend::slotRemoveDevice ( const QString& udi )
 {
 	if (udi.length() < 1) return;
 
@@ -358,7 +358,7 @@ void Krypt::slotRemoveDevice ( const QString& udi )
 
 	// kdDebug() << __func__ << ": OK" << endl;
 
-	if (!dbus_pending_call_set_notify(pcall, Krypt::cmdCallback, NULL, NULL)) {
+	if (!dbus_pending_call_set_notify(pcall, HALBackend::cmdCallback, NULL, NULL)) {
 		kdDebug() << __func__ << "(): Got some trouble while setting callback function..." << endl;
 		goto error;
 	}
@@ -376,7 +376,7 @@ error:
 	return;
 }
 
-void Krypt::slotSendPassword ( char* udi, const char *password )
+void HALBackend::slotSendPassword ( char* udi, const char *password )
 {
 	DBusError error;
 	DBusMessage *msg = 0;
@@ -415,7 +415,7 @@ void Krypt::slotSendPassword ( char* udi, const char *password )
 	}
 
 	// Last two parameters only needed for dbus user data ( and freeing it ).
-	if ( ok && !dbus_pending_call_set_notify ( pcall, Krypt::passCallback, udi, NULL ) )
+	if ( ok && !dbus_pending_call_set_notify ( pcall, HALBackend::passCallback, udi, NULL ) )
 	{
 		kdDebug() << __func__ << "(): Got some trouble while setting callback function...\n";
 		ok = false;
@@ -424,7 +424,7 @@ void Krypt::slotSendPassword ( char* udi, const char *password )
 	dbus_message_unref ( msg );
 }
 
-void Krypt::initScan()
+void HALBackend::initScan()
 {
 	char **device_names;
 	int num_devices;
@@ -449,7 +449,7 @@ void Krypt::initScan()
 	}
 }
 
-Krypt::VolMapStatus Krypt::volumeStatus ( const QString &udi )
+HALBackend::VolMapStatus HALBackend::volumeStatus ( const QString &udi )
 {
 	char **device_names;
 	int num_devices;
@@ -494,7 +494,7 @@ Krypt::VolMapStatus Krypt::volumeStatus ( const QString &udi )
 	return VOL_NOT_MAPPED;
 }
 
-void Krypt::passCallback ( DBusPendingCall* pcall, void *data )
+void HALBackend::passCallback ( DBusPendingCall* pcall, void *data )
 {
 	char *udi = ( char* ) data;
 	DBusMessage *reply = 0;
@@ -537,12 +537,12 @@ error_and_unref:
 error:
 		dbus_pending_call_unref ( pcall );
 
-	s_Krypt->sigPassError( QString(udi), errorName, errorMsg );
+	s_HALBackend->sigPassError( QString(udi), errorName, errorMsg );
 
 	return;
 }
 
-void Krypt::cmdCallback ( DBusPendingCall* pcall, void *data )
+void HALBackend::cmdCallback ( DBusPendingCall* pcall, void *data )
 {
 	char *udi = ( char* ) data;
 	DBusMessage *reply = 0;
@@ -585,12 +585,12 @@ error_and_unref:
 error:
 		dbus_pending_call_unref ( pcall );
 
-	s_Krypt->sigError( QString(udi), errorName, errorMsg );
+	s_HALBackend->sigError( QString(udi), errorName, errorMsg );
 
 	return;
 }
 
-QString Krypt::getHalPropertyString ( const QString &udi, const QString &key )
+QString HALBackend::getHalPropertyString ( const QString &udi, const QString &key )
 {
 	if (udi.length() < 1) return QString();
 
@@ -612,7 +612,7 @@ QString Krypt::getHalPropertyString ( const QString &udi, const QString &key )
 	return qVal;
 }
 
-bool Krypt::getHalPropertyBool ( const QString &udi, const QString &key )
+bool HALBackend::getHalPropertyBool ( const QString &udi, const QString &key )
 {
 	bool val;
 	DBusError error;
@@ -624,7 +624,7 @@ bool Krypt::getHalPropertyBool ( const QString &udi, const QString &key )
 	return val;
 }
 
-bool Krypt::initDBus()
+bool HALBackend::initDBus()
 {
 	DBusError error;
 
@@ -648,7 +648,7 @@ bool Krypt::initDBus()
 	return true;
 }
 
-void Krypt::closeDBus()
+void HALBackend::closeDBus()
 {
 	if ( _dBusQtConnection )
 	{
@@ -662,7 +662,7 @@ void Krypt::closeDBus()
 	}
 }
 
-bool Krypt::initHAL()
+bool HALBackend::initHAL()
 {
 	DBusError error;
 
@@ -680,12 +680,12 @@ bool Krypt::initHAL()
 	libhal_ctx_set_dbus_connection ( _halContext, _dbus_connection );
 
 	// HAL callback functions
-	libhal_ctx_set_device_added ( _halContext, Krypt::hal_device_added );
-	libhal_ctx_set_device_removed ( _halContext, Krypt::hal_device_removed );
+	libhal_ctx_set_device_added ( _halContext, HALBackend::hal_device_added );
+	libhal_ctx_set_device_removed ( _halContext, HALBackend::hal_device_removed );
 	libhal_ctx_set_device_new_capability ( _halContext, NULL );
 	libhal_ctx_set_device_lost_capability ( _halContext, NULL );
-	libhal_ctx_set_device_property_modified ( _halContext, Krypt::hal_device_property_modified );
-	libhal_ctx_set_device_condition ( _halContext, Krypt::hal_device_condition );
+	libhal_ctx_set_device_property_modified ( _halContext, HALBackend::hal_device_property_modified );
+	libhal_ctx_set_device_condition ( _halContext, HALBackend::hal_device_condition );
 
 	if ( !libhal_ctx_init ( _halContext, &error ) )
 	{
@@ -711,7 +711,7 @@ bool Krypt::initHAL()
 	return true;
 }
 
-void Krypt::closeHAL()
+void HALBackend::closeHAL()
 {
 	DBusError error;
 
@@ -743,27 +743,27 @@ void Krypt::closeHAL()
  ** HAL CALL-BACKS                        **
  ******************************************/
 
-void Krypt::hal_device_added ( LibHalContext *ctx, const char *udi )
+void HALBackend::hal_device_added ( LibHalContext *ctx, const char *udi )
 {
 	QString desc = QString("Device Added: %1").arg(udi);
 
 	Q_UNUSED ( ctx );
 
-	s_Krypt->sendInfo(desc);
-	s_Krypt->addDevice ( QString(udi) );
+	s_HALBackend->sendInfo(desc);
+	s_HALBackend->addDevice ( QString(udi) );
 }
 
-void Krypt::hal_device_removed ( LibHalContext *ctx, const char *udi )
+void HALBackend::hal_device_removed ( LibHalContext *ctx, const char *udi )
 {
 	QString desc = QString("Device Removed: %1").arg(udi);
 
 	Q_UNUSED ( ctx );
 
-	s_Krypt->sendInfo(desc);
-	s_Krypt->removeDevice ( QString(udi) );
+	s_HALBackend->sendInfo(desc);
+	s_HALBackend->removeDevice ( QString(udi) );
 }
 
-void Krypt::hal_device_property_modified ( LibHalContext *ctx, const char *udi,
+void HALBackend::hal_device_property_modified ( LibHalContext *ctx, const char *udi,
 					   const char *key, dbus_bool_t is_removed, dbus_bool_t is_added )
 {
 	QString desc = QString("Device Modified: %1; Key: %2; IsRemoved: %3; IsAdded: %4")
@@ -775,11 +775,11 @@ void Krypt::hal_device_property_modified ( LibHalContext *ctx, const char *udi,
 	Q_UNUSED ( is_removed );
 	Q_UNUSED ( is_added );
 
-	s_Krypt->sendInfo(desc);
-	s_Krypt->modifyDevice ( QString(udi), QString(key), added );
+	s_HALBackend->sendInfo(desc);
+	s_HALBackend->modifyDevice ( QString(udi), QString(key), added );
 }
 
-void Krypt::hal_device_condition ( LibHalContext *ctx, const char *udi,
+void HALBackend::hal_device_condition ( LibHalContext *ctx, const char *udi,
 				   const char *condition_name, const char* message )
 {
 	QString desc = QString("Device Condition: %1; CondName: %2; Message: %3")
@@ -788,6 +788,6 @@ void Krypt::hal_device_condition ( LibHalContext *ctx, const char *udi,
 	Q_UNUSED ( ctx );
 	Q_UNUSED ( message );
 
-	s_Krypt->sendInfo(desc);
-	//s_Krypt->conditionDevice ( QString(udi), QString(condition_name), QString(message) );
+	s_HALBackend->sendInfo(desc);
+	//s_HALBackend->conditionDevice ( QString(udi), QString(condition_name), QString(message) );
 }

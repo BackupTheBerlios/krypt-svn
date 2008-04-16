@@ -1,6 +1,6 @@
 /***************************************************************************
- *   Copyright (C) 2007, 2008 by Jakub Schmidtke                                 *
- *   sjakub@users.berlios.de                                                      *
+ *   Copyright (C) 2007, 2008 by Jakub Schmidtke                           *
+ *   sjakub@users.berlios.de                                               *
  *                                                                         *
  *   This program is free software; you can redistribute it and/or modify  *
  *   it under the terms of the GNU General Public License as published by  *
@@ -18,8 +18,8 @@
  *   51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.           *
  ***************************************************************************/
 
-#ifndef _KRYPT_H_
-#define _KRYPT_H_
+#ifndef _HAL_BACKEND_H_
+#define _HAL_BACKEND_H_
 
 #include <qobject.h>
 #include <qmap.h>
@@ -31,13 +31,7 @@
 /* HAL libraries */
 #include <libhal.h>
 
-/**
- * @short Main Krypt Object
- * @author Jakub Schmidtke <sjakub@users.berlios.de>
- * @version 0.1
- */
-
-class Krypt : public QObject
+class HALBackend : public QObject
 {
 	Q_OBJECT
 
@@ -45,12 +39,12 @@ public:
 	/**
 	 * Default Constructor
 	 */
-	Krypt();
+	HALBackend();
 
 	/**
 	 * Default Destructor
 	 */
-	virtual ~Krypt();
+	virtual ~HALBackend();
 
 	bool isOK();
 	void initScan();
@@ -87,7 +81,7 @@ private:
 	QMap<QString, QString> luksToClear;
 	QMap<QString, QString> clearToLuks;
 
-	static Krypt* s_Krypt;
+	static HALBackend* s_HALBackend;
 
 	void sendInfo(const QString& info);
 
@@ -161,4 +155,4 @@ private:
 	static void cmdCallback ( DBusPendingCall* pcall, void* data );
 };
 
-#endif // _KRYPT_H_
+#endif // _HAL_BACKEND_H_

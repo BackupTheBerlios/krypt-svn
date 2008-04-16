@@ -21,22 +21,22 @@
 #ifndef _KRYPT_GLOBAL_H_
 #define _KRYPT_GLOBAL_H_
 
-#define KRYPT_CONF_APP_GROUP			"app"
-#define KRYPT_CONF_TRAY_GROUP			"tray"
+#define KRYPT_CONF_APP_GROUP   "app"
+#define KRYPT_CONF_TRAY_GROUP   "tray"
 
-#define KRYPT_CONF_DEVICE_DESC_GROUP		"device_desc"
-#define KRYPT_CONF_DEVICES_GROUP		"devices"
+#define KRYPT_CONF_DEVICE_DESC_GROUP  "device_desc"
+#define KRYPT_CONF_DEVICES_GROUP  "devices"
 
-#define KRYPT_CONF_APP_SHOW_POPUP		"show_pass_popup"
+#define KRYPT_CONF_APP_SHOW_POPUP  "show_pass_popup"
 
-#define KRYPT_CONF_TRAY_SHOW_UMOUNT		"show_umount"
-#define KRYPT_CONF_TRAY_SHOW_MOUNT		"show_mount"
-#define KRYPT_CONF_TRAY_SHOW_ENCRYPT		"show_encrypt"
-#define KRYPT_CONF_TRAY_SHOW_DECRYPT		"show_decrypt"
+#define KRYPT_CONF_TRAY_SHOW_UMOUNT  "show_umount"
+#define KRYPT_CONF_TRAY_SHOW_MOUNT  "show_mount"
+#define KRYPT_CONF_TRAY_SHOW_ENCRYPT  "show_encrypt"
+#define KRYPT_CONF_TRAY_SHOW_DECRYPT  "show_decrypt"
 
-#define KRYPT_CONF_TRAY_AUTO_ENCRYPT		"auto_encrypt"
+#define KRYPT_CONF_TRAY_AUTO_ENCRYPT  "auto_encrypt"
 
-#define KRYPT_CONF_DEVICES_KNOWN		"known"
-#define KRYPT_CONF_DEVICES_IGNORED		"ignore"
+#define KRYPT_CONF_DEVICES_KNOWN  "known"
+#define KRYPT_CONF_DEVICES_IGNORED  "ignore"
 
 #endif // _KRYPT_GLOBAL_H_

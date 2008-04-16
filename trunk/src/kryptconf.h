@@ -28,22 +28,22 @@
 
 class KryptConf : public KDialogBase
 {
-	Q_OBJECT
+  Q_OBJECT
 
 public:
-	KryptConf(KConfig *cfg);
-	~KryptConf();
+  KryptConf ( KConfig *cfg );
+  ~KryptConf();
 
 signals:
-	void sigConfChanged();
+  void sigConfChanged();
 
 protected slots:
-	void slotCancel();
-	void slotOk();
+  void slotCancel();
+  void slotOk();
 
 private:
-	ConfDialog* _dlg;
-	KConfig *_cfg;
+  ConfDialog* _dlg;
+  KConfig *_cfg;
 };
 
 #endif // _KRYPT_CONF_H_

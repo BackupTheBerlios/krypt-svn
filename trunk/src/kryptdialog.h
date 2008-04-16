@@ -35,33 +35,33 @@ class DecryptDialog;
 
 class KryptDialog : public KDialogBase
 {
-	Q_OBJECT
+  Q_OBJECT
 
 public:
-	KryptDialog ( const QString &udi, const QString &vendor,
-				  const QString &product, const QString &dev, const QString &devType );
-	~KryptDialog();
+  KryptDialog ( const QString &udi, const QString &vendor,
+                const QString &product, const QString &dev, const QString &devType );
+  ~KryptDialog();
 
-	QString getPassword();
+  QString getPassword();
 
 signals:
-	void sigPassword ( char *udi, const char *password );
+  void sigPassword ( char *udi, const char *password );
 
 public slots:
-	void slotPassError ( const QString& udi, const QString &errName, const QString &errMsg );
-	void slotDevRemoved ( const QString &udi );
-	void slotDevMapped ( const QString &udi );
-	void slotPasswordChanged ( const QString &text );
-	void slotCancel();
-	void slotDecrypt();
+  void slotPassError ( const QString& udi, const QString &errName, const QString &errMsg );
+  void slotDevRemoved ( const QString &udi );
+  void slotDevMapped ( const QString &udi );
+  void slotPasswordChanged ( const QString &text );
+  void slotCancel();
+  void slotDecrypt();
 
 private:
-	DecryptDialog* _dlg;
-	QString _udi;
-	QString _device;
-	char* _cUDI;
+  DecryptDialog* _dlg;
+  QString _udi;
+  QString _device;
+  char* _cUDI;
 
-	void setDeviceIcon ( QString deviceType );
+  void setDeviceIcon ( QString deviceType );
 };
 
 #endif // _KRYPT_DIALOG_H_

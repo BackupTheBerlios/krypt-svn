@@ -20,17 +20,17 @@
 
 #include "kryptdevitem.h"
 
-KryptDevItem::KryptDevItem ( const QString &myUdi, QListBox * listbox, const QString & text):
-		QListBoxText(listbox, text), udi(myUdi)
+KryptDevItem::KryptDevItem ( const QString &myUdi, QListBox * listbox, const QString & text ) :
+    QListBoxText ( listbox, text ), udi ( myUdi )
 {
 }
 
-KryptDevItem::KryptDevItem ( const QString &myUdi, const QString & text):
-		QListBoxText(text), udi(myUdi)
+KryptDevItem::KryptDevItem ( const QString &myUdi, const QString & text ) :
+    QListBoxText ( text ), udi ( myUdi )
 {
 }
 
-KryptDevItem::KryptDevItem ( const QString &myUdi, QListBox * listbox, const QString & text, QListBoxItem * after ):
-		QListBoxText(listbox, text, after), udi(myUdi)
+KryptDevItem::KryptDevItem ( const QString &myUdi, QListBox * listbox, const QString & text, QListBoxItem * after ) :
+    QListBoxText ( listbox, text, after ), udi ( myUdi )
 {
 }

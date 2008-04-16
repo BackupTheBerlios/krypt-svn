@@ -25,128 +25,129 @@
 #include "decryptdialog.h"
 
 KryptDialog::KryptDialog ( const QString &udi, const QString &vendor,
-				  const QString &product, const QString &dev, const QString &devType ) :
-		KDialogBase ( NULL, "Dialog", true, "Decrypt Storage Device", ( Cancel | User1 ),
-				User1, false, KGuiItem ( i18n ( "Decrypt" ), "decrypted" ) )
-		,_dlg(0), _udi(udi), _device(dev), _cUDI(0)
+                           const QString &product, const QString &dev, const QString &devType ) :
+    KDialogBase ( NULL, "Dialog", true, "Decrypt Storage Device", ( Cancel | User1 ),
+                  User1, false, KGuiItem ( i18n ( "Decrypt" ), "decrypted" ) )
+    , _dlg ( 0 ), _udi ( udi ), _device ( dev ), _cUDI ( 0 )
 {
-	_cUDI = new char[_udi.length() + 1];
-	memcpy(_cUDI, _udi.ascii(), _udi.length() + 1);
+  _cUDI = new char[_udi.length() + 1];
+  memcpy ( _cUDI, _udi.ascii(), _udi.length() + 1 );
 
-	_dlg = new DecryptDialog ( this );
+  _dlg = new DecryptDialog ( this );
 
-	_dlg->errorBox->hide();
-	_dlg->descLabel->setText ( _dlg->descLabel->text().arg ( vendor ).arg ( product ).arg ( _device ) );
-	_dlg->descLabel->adjustSize();
-	_dlg->adjustSize();
+  _dlg->errorBox->hide();
+  _dlg->descLabel->setText ( _dlg->descLabel->text().arg ( vendor ).arg ( product ).arg ( _device ) );
+  _dlg->descLabel->adjustSize();
+  _dlg->adjustSize();
 
-	setDeviceIcon ( devType );
+  setDeviceIcon ( devType );
 
-	enableButton ( User1, false );
+  enableButton ( User1, false );
 
-	connect ( _dlg->passwordEdit, SIGNAL ( textChanged ( const QString & ) ),
-		this, SLOT ( slotPasswordChanged ( const QString & ) ) );
+  connect ( _dlg->passwordEdit, SIGNAL ( textChanged ( const QString & ) ),
+            this, SLOT ( slotPasswordChanged ( const QString & ) ) );
 
-	connect ( this, SIGNAL ( cancelClicked() ),
-		  this, SLOT ( slotCancel() ) );
+  connect ( this, SIGNAL ( cancelClicked() ),
+            this, SLOT ( slotCancel() ) );
 
-	connect ( this, SIGNAL(user1Clicked()),
-		  this, SLOT(slotDecrypt()));
+  connect ( this, SIGNAL ( user1Clicked() ),
+            this, SLOT ( slotDecrypt() ) );
 
-	setMainWidget ( _dlg );
+  setMainWidget ( _dlg );
 }
 
 KryptDialog::~KryptDialog()
 {
-	if (_cUDI) delete[] _cUDI;
-	delete _dlg;
+  if ( _cUDI ) delete[] _cUDI;
+
+  delete _dlg;
 }
 
 void KryptDialog::setDeviceIcon ( QString deviceType )
 {
-	QString deviceIcon;
+  QString deviceIcon;
 
-	if ( deviceType == "memory_stick"
-			|| deviceType == "cdrom"
-			|| deviceType == "sd_mmc"
-			|| deviceType == "compact_flash"
-			|| deviceType == "smart_media"
-			|| deviceType == "zip" )
-	{
+  if ( deviceType == "memory_stick"
+       || deviceType == "cdrom"
+       || deviceType == "sd_mmc"
+       || deviceType == "compact_flash"
+       || deviceType == "smart_media"
+       || deviceType == "zip" )
+  {
 
-		deviceIcon = QString ( "%1_unmount" ).arg ( deviceType );
-	}
-	else
-	{
-		deviceIcon = QString ( "hdd_unmount" );
-	}
+    deviceIcon = QString ( "%1_unmount" ).arg ( deviceType );
+  }
+  else
+  {
+    deviceIcon = QString ( "hdd_unmount" );
+  }
 
-	QPixmap pixmap = KGlobal::iconLoader()->loadIcon ( deviceIcon, KIcon::NoGroup, KIcon::SizeLarge );
+  QPixmap pixmap = KGlobal::iconLoader()->loadIcon ( deviceIcon, KIcon::NoGroup, KIcon::SizeLarge );
 
-	_dlg->encryptedIcon->setPixmap ( pixmap );
+  _dlg->encryptedIcon->setPixmap ( pixmap );
 }
 
 QString KryptDialog::getPassword()
 {
-	return _dlg->passwordEdit->text();
+  return _dlg->passwordEdit->text();
 }
 
-void KryptDialog::slotDevRemoved(const QString &udi)
+void KryptDialog::slotDevRemoved ( const QString &udi )
 {
-	if (udi == _udi)
-	{
-		this->deleteLater();
-	}
+  if ( udi == _udi )
+  {
+    this->deleteLater();
+  }
 }
 
-void KryptDialog::slotDevMapped( const QString &udi )
+void KryptDialog::slotDevMapped ( const QString &udi )
 {
-	// Same action - we close the dialog!
-	slotDevRemoved(udi);
+  // Same action - we close the dialog!
+  slotDevRemoved ( udi );
 }
 
-void KryptDialog::slotPassError ( const QString& udi, const QString &errName, const QString &errMsg)
+void KryptDialog::slotPassError ( const QString& udi, const QString &errName, const QString &errMsg )
 {
-	if (udi != _udi) return;
+  if ( udi != _udi ) return;
 
-	QString error = QString::null;
+  QString error = QString::null;
 
-	if ( errName == "org.freedesktop.Hal.Device.Volume.Crypto.SetupPasswordError" )
-	{
-		error = QString ( i18n ( "Wrong password!" ) );
-	}
-	else if ( errName == "org.freedesktop.Hal.Device.Volume.Crypto.CryptSetupMissing" )
-	{
-		error = QString ( i18n ( "Decryption failed! Application \"cryptsetup\" not found. "
-				"Is package \"util-linux-crypto\" installed?" ) );
-	}
-	else if ( errName == "org.freedesktop.Hal.Device.Volume.Crypto.SetupError" )
-	{
-		error = QString ( i18n ( "%1 is already decrypted!" ).arg ( _device ) );
-	}
-	else
-	{
-		error = errMsg;
-	}
+  if ( errName == "org.freedesktop.Hal.Device.Volume.Crypto.SetupPasswordError" )
+  {
+    error = QString ( i18n ( "Wrong password!" ) );
+  }
+  else if ( errName == "org.freedesktop.Hal.Device.Volume.Crypto.CryptSetupMissing" )
+  {
+    error = QString ( i18n ( "Decryption failed! Application \"cryptsetup\" not found. "
+                             "Is package \"util-linux-crypto\" installed?" ) );
+  }
+  else if ( errName == "org.freedesktop.Hal.Device.Volume.Crypto.SetupError" )
+  {
+    error = QString ( i18n ( "%1 is already decrypted!" ).arg ( _device ) );
+  }
+  else
+  {
+    error = errMsg;
+  }
 
-	_dlg->errorLabel->setText ( QString ( "<b>%1</b>" ).arg ( error ) );
+  _dlg->errorLabel->setText ( QString ( "<b>%1</b>" ).arg ( error ) );
 
-	_dlg->errorBox->show();
+  _dlg->errorBox->show();
 }
 
 void KryptDialog::slotPasswordChanged ( const QString &text )
 {
-	enableButton ( User1, !text.isEmpty() );
+  enableButton ( User1, !text.isEmpty() );
 }
 
 void KryptDialog::slotDecrypt()
 {
-	if (_dlg->passwordEdit->text().isEmpty()) return;
+  if ( _dlg->passwordEdit->text().isEmpty() ) return;
 
-	emit sigPassword (_cUDI, _dlg->passwordEdit->text().ascii());
+  emit sigPassword ( _cUDI, _dlg->passwordEdit->text().ascii() );
 }
 
 void KryptDialog::slotCancel()
 {
-	this->deleteLater();
+  this->deleteLater();
 }

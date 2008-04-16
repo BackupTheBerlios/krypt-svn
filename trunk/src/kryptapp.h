@@ -34,33 +34,33 @@ class HALBackend;
 
 class KryptApp : public KUniqueApplication
 {
-		Q_OBJECT
+  Q_OBJECT
 
-	public:
-		KryptApp();
+public:
+  KryptApp();
 
-	protected slots:
-		void slotDevNew(const QString &udi);
-		void slotDevMapped(const QString &udi);
-		void slotDevUnmapped(const QString &udi);
-		void slotDevMounted(const QString &udi);
-		void slotDevUmounted(const QString &udi);
-		void slotNewInfo(const QString &info);
-		void slotPopPassDialog(const QString &udi);
-		void slotError(const QString &udi, const QString &errorName, const QString &errorMsg);
-		void slotLoadConfig();
+protected slots:
+  void slotDevNew ( const QString &udi );
+  void slotDevMapped ( const QString &udi );
+  void slotDevUnmapped ( const QString &udi );
+  void slotDevMounted ( const QString &udi );
+  void slotDevUmounted ( const QString &udi );
+  void slotNewInfo ( const QString &info );
+  void slotPopPassDialog ( const QString &udi );
+  void slotError ( const QString &udi, const QString &errorName, const QString &errorMsg );
+  void slotLoadConfig();
 
-	protected:
-		KConfig _cfg;
-		KryptSystemTray *_tray;
-                HALBackend* _halBackend;
-		bool _showPopUp;
-		QStringList _devsKnown;
-		QStringList _devsIgnored;
+protected:
+  KConfig _cfg;
+  KryptSystemTray *_tray;
+  HALBackend* _halBackend;
+  bool _showPopUp;
+  QStringList _devsKnown;
+  QStringList _devsIgnored;
 
-		QString getUdiDesc(const QString& udi);
+  QString getUdiDesc ( const QString& udi );
 
-		void checkKnown(const QString &udi);
+  void checkKnown ( const QString &udi );
 };
 
 #endif // _KRYPT_APP_H_

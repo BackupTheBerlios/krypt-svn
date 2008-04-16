@@ -29,62 +29,62 @@ class KryptConf;
 
 class KryptSystemTray :  public KSystemTray
 {
-	Q_OBJECT
+  Q_OBJECT
 
-	public:
-		KryptSystemTray(KConfig *cfg, QWidget *parent = 0, const char *name = 0);
+public:
+  KryptSystemTray ( KConfig *cfg, QWidget *parent = 0, const char *name = 0 );
 
-		virtual void contextMenuAboutToShow(KPopupMenu *menu);
+  virtual void contextMenuAboutToShow ( KPopupMenu *menu );
 
-	signals:
-		void sigUmountDevice(const QString &udi);
-		void sigMountDevice(const QString &udi);
-		void sigDecryptDevice(const QString &udi);
-		void sigEncryptDevice(const QString &udi);
-		void sigConfigChanged();
+signals:
+  void sigUmountDevice ( const QString &udi );
+  void sigMountDevice ( const QString &udi );
+  void sigDecryptDevice ( const QString &udi );
+  void sigEncryptDevice ( const QString &udi );
+  void sigConfigChanged();
 
-	public slots:
-		void slotDeviceIsEncrypted(const QString &udi, const QString &desc);
-		void slotDeviceIsMounted(const QString &udi, const QString &desc);
-		void slotDeviceIsUmounted(const QString &udi, const QString &desc);
-		void slotDeviceRemoved(const QString &udi);
- 		void slotConfigChanged();
+public slots:
+  void slotDeviceIsEncrypted ( const QString &udi, const QString &desc );
+  void slotDeviceIsMounted ( const QString &udi, const QString &desc );
+  void slotDeviceIsUmounted ( const QString &udi, const QString &desc );
+  void slotDeviceRemoved ( const QString &udi );
+  void slotConfigChanged();
 
-	protected slots:
-		void slotUmountClicked(int id);
-		void slotMountClicked(int id);
-		void slotDecryptClicked(int id);
-		void slotEncryptClicked(int id);
-		void slotPrefs();
+protected slots:
+  void slotUmountClicked ( int id );
+  void slotMountClicked ( int id );
+  void slotDecryptClicked ( int id );
+  void slotEncryptClicked ( int id );
+  void slotPrefs();
 
-	protected:
-		void mousePressEvent( QMouseEvent *e );
+protected:
+  void mousePressEvent ( QMouseEvent *e );
 
-	private:
-		QMap<QString, int> _udi2ID;
-		QMap<int, QString> _id2Udi;
-		QMap<int, QString> _id2Desc;
+private:
+  QMap<QString, int> _udi2ID;
+  QMap<int, QString> _id2Udi;
+  QMap<int, QString> _id2Desc;
 
-		QValueList<int> _devsIgnored;
+  QValueList<int> _devsIgnored;
 
-		QValueList<int> _devsEncrypted;
-		QValueList<int> _devsMounted;
-		QValueList<int> _devsUmounted;
-		QValueList<int> _toEncrypt;
+  QValueList<int> _devsEncrypted;
+  QValueList<int> _devsMounted;
+  QValueList<int> _devsUmounted;
+  QValueList<int> _toEncrypt;
 
-		void removeID(int id);
-		int getID(const QString &udi, const QString &desc);
-		void loadConfig();
+  void removeID ( int id );
+  int getID ( const QString &udi, const QString &desc );
+  void loadConfig();
 
-		KryptConf* _confDlg;
-		KConfig* _cfg;
-		int _nextID;
+  KryptConf* _confDlg;
+  KConfig* _cfg;
+  int _nextID;
 
-		bool _showUmount;
-		bool _showMount;
-		bool _showEncrypt;
-		bool _showDecrypt;
-		bool _autoEncrypt;
+  bool _showUmount;
+  bool _showMount;
+  bool _showEncrypt;
+  bool _showDecrypt;
+  bool _autoEncrypt;
 };
 
 #endif // _KRYPT_SYS_TRAY_H_

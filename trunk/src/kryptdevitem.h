@@ -25,12 +25,13 @@
 
 class KryptDevItem : public QListBoxText
 {
-public:
-	KryptDevItem ( const QString &myUdi, QListBox * listbox, const QString & text = QString::null );
-	KryptDevItem ( const QString &myUdi, const QString & text = QString::null );
-	KryptDevItem ( const QString &myUdi, QListBox * listbox, const QString & text, QListBoxItem * after );
 
-	QString udi;
+public:
+  KryptDevItem ( const QString &myUdi, QListBox * listbox, const QString & text = QString::null );
+  KryptDevItem ( const QString &myUdi, const QString & text = QString::null );
+  KryptDevItem ( const QString &myUdi, QListBox * listbox, const QString & text, QListBoxItem * after );
+
+  QString udi;
 };
 
 #endif // _KRYPT_DEV_ITEM_H_

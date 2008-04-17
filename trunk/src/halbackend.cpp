@@ -18,6 +18,7 @@
  *   51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.           *
  ***************************************************************************/
 
+#include "kryptglobal.h"
 #include "halbackend.h"
 #include "halbackend.moc"
 
@@ -25,16 +26,34 @@
 #include <kdebug.h>
 
 /* Static instance of this class, for static HAL callbacks */
-HALBackend* HALBackend::s_HALBackend = 0;
+HALBackend *HALBackend::s_HALBackend = 0;
+
+HALBackend *HALBackend::get()
+{
+  return s_HALBackend;
+}
+
+void HALBackend::create()
+{
+  if ( s_HALBackend != 0 ) return;
+
+  s_HALBackend = new HALBackend();
+}
+
+void HALBackend::destroy()
+{
+  if ( s_HALBackend == 0 ) return;
+
+  delete s_HALBackend;
+
+  s_HALBackend = 0;
+}
 
 HALBackend::HALBackend()
-    : QObject()
-    , _halContext ( 0 )
-    , _dBusQtConnection ( 0 )
-    , _dbus_connection ( 0 )
+    : QObject(), _halContext ( 0 )
+    , _dBusQtConnection ( 0 ), _dbus_connection ( 0 )
 
 {
-  s_HALBackend = this;
   _dbusOK = false;
   _halOK = false;
 
@@ -68,63 +87,64 @@ void HALBackend::removeDevice ( const QString& udi )
 {
   if ( luksToClear.contains ( udi ) )
   {
-    sendInfo ( QString ( "Device Removed: '%1'" ).arg ( udi ) );
-    emit sigDevRemoved ( udi );
+    sendInfo ( QString ( "LUKS Device Removed: '%1'" ).arg ( udi ) );
+    emit sigHALEvent ( KRYPT_HAL_DEV_EVENT_REMOVED, udi );
+  }
+  else if ( clearToLuks.contains ( udi ) )
+  {
+    sendInfo ( QString ( "Clear Device Removed: '%1'" ).arg ( udi ) );
+
+    QString luksUdi = clearToLuks[udi];
+
+    sendInfo ( QString ( "Device Unmapped: '%1'" ).arg ( luksUdi ) );
+    emit sigHALEvent ( KRYPT_HAL_DEV_EVENT_UNMAPPED, luksUdi );
   }
 }
 
 void HALBackend::modifyDevice ( const QString& udi, const QString& key, bool isAdded )
 {
-  if ( luksToClear.contains ( udi ) )
+  sendInfo ( QString ( "Device Modified: '%1' '%2' '%3'" ).arg ( udi ).arg ( key ).arg ( isAdded ) );
+
+  bool foundClear = clearToLuks.contains ( udi );
+
+  if ( !foundClear )
   {
-    if ( key == "info.callouts.remove" )
+    QString luksUdi = getHalPropertyString ( udi, "volume.crypto_luks.clear.backing_volume" );
+
+    if ( luksUdi.length() > 0 )
     {
-      if ( volumeStatus ( udi ) == VOL_MAPPED )
-      {
-        // mapped
-        sendInfo ( QString ( "Device Mapped: '%1'" ).arg ( udi ) );
-        emit sigDevMapped ( udi );
-      }
-      else
-      {
-        // unmapped
-        sendInfo ( QString ( "Device Unmapped: '%1'" ).arg ( udi ) );
-        emit sigDevUnmapped ( udi );
-      }
+      luksToClear[luksUdi] = udi;
+      clearToLuks[udi] = luksUdi;
+
+      foundClear = true;
     }
   }
-  else if ( clearToLuks.contains ( udi ) )
+
+  if ( foundClear )
   {
-    QString val = clearToLuks[udi];
+    QString luksUdi = clearToLuks[udi];
 
     if ( key == "volume.is_mounted" )
     {
       if ( getHalPropertyBool ( udi, key ) )
       {
         // mounted
-        sendInfo ( QString ( "Device Mounted: '%1' as '%2'" ).arg ( val ).arg ( udi ) );
-        emit sigDevMounted ( val );
+        sendInfo ( QString ( "Device Mounted: '%1' as '%2'" ).arg ( luksUdi ).arg ( udi ) );
+        emit sigHALEvent ( KRYPT_HAL_DEV_EVENT_MOUNTED, luksUdi );
       }
       else
       {
         // unmounted
-        sendInfo ( QString ( "Device Unmounted: '%1' from '%2'" ).arg ( val ).arg ( udi ) );
-        emit sigDevUmounted ( val );
+        sendInfo ( QString ( "Device Unmounted: '%1' from '%2'" ).arg ( luksUdi ).arg ( udi ) );
+        emit sigHALEvent ( KRYPT_HAL_DEV_EVENT_UMOUNTED, luksUdi );
       }
     }
   }
-  else
-  {
-    QString val = getHalPropertyString ( udi, "volume.crypto_luks.clear.backing_volume" );
+}
 
-    if ( val.length() > 0 )
-    {
-      luksToClear.insert ( val, udi );
-      clearToLuks.insert ( udi, val );
-
-      modifyDevice ( udi, key, isAdded );
-    }
-  }
+bool HALBackend::isDevicePresent ( const QString& udi )
+{
+  return luksToClear.contains ( udi );
 }
 
 bool HALBackend::getDeviceInfo ( const QString& udi, QString &vendor, QString &product, QString &blockDevice, QString &type, QString &mountPoint )
@@ -141,11 +161,11 @@ bool HALBackend::getDeviceInfo ( const QString& udi, QString &vendor, QString &p
 
   type = getHalPropertyString ( parentUDI, "storage.drive_type" );
 
-  QString clear = luksToClear[udi];
+  QString clearUdi = luksToClear[udi];
 
-  if ( clear.length() > 0 )
+  if ( clearUdi.length() > 0 )
   {
-    mountPoint = getHalPropertyString ( clear, "volume.mount_point" );
+    mountPoint = getHalPropertyString ( clearUdi, "volume.mount_point" );
   }
 
   return true;
@@ -163,13 +183,38 @@ void HALBackend::addDevice ( const QString& udi )
   if ( !libhal_device_query_capability ( _halContext, udi.ascii(), "volume", NULL ) )
     return;
 
+  /* We got a device which has underlying LUKS volume */
+  if ( libhal_device_property_exists ( _halContext, udi.ascii(), "volume.crypto_luks.clear.backing_volume", NULL ) )
+  {
+    QString luksUdi = getHalPropertyString ( udi, "volume.crypto_luks.clear.backing_volume" );
+
+    sendInfo ( QString ( "Added Clear device '%1', luks_vol: '%2'\n" ).arg ( udi ).arg ( luksUdi ) );
+
+    if ( luksToClear.contains ( luksUdi ) )
+    {
+      luksToClear[luksUdi] = udi;
+      clearToLuks[udi] = luksUdi;
+
+      emit sigHALEvent ( KRYPT_HAL_DEV_EVENT_MAPPED, luksUdi );
+
+      return;
+    }
+  }
+
   if ( getHalPropertyString ( udi, "volume.fsusage" ) != "crypto" )
     return;
 
   if ( getHalPropertyString ( udi, "volume.fstype" ) != "crypto_LUKS" )
     return;
 
-  luksToClear.insert ( udi, "" );
+  if ( !luksToClear.contains ( udi ) )
+  {
+    luksToClear[udi] = "";
+  }
+  else
+  {
+    sendInfo ( QString ( "LuksToClear already contains '%1' = '%2'\n" ).arg ( udi ).arg ( luksToClear[udi] ) );
+  }
 
   VolMapStatus stat = volumeStatus ( udi );
 
@@ -178,8 +223,7 @@ void HALBackend::addDevice ( const QString& udi )
   if ( stat == VOL_MOUNTED )
   {
     sendInfo ( QString ( "Added mapped and mounted device '%1'" ).arg ( udi ) );
-    emit sigDevMapped ( udi );
-    emit sigDevMounted ( udi );
+    emit sigHALEvent ( KRYPT_HAL_DEV_EVENT_MOUNTED, udi );
 
     return;
   }
@@ -187,21 +231,21 @@ void HALBackend::addDevice ( const QString& udi )
   if ( stat == VOL_MAPPED )
   {
     sendInfo ( QString ( "Added mapped device '%1'" ).arg ( udi ) );
-    emit sigDevMapped ( udi );
+    emit sigHALEvent ( KRYPT_HAL_DEV_EVENT_MAPPED, udi );
 
     return;
   }
 
   sendInfo ( QString ( "Added NOT mapped device '%1'" ).arg ( udi ) );
 
-  emit sigDevNew ( udi );
+  emit sigHALEvent ( KRYPT_HAL_DEV_EVENT_NEW, udi );
 }
 
 void HALBackend::slotUmountDevice ( const QString& udi )
 {
-  QString vol = luksToClear[udi];
+  QString clearUdi = luksToClear[udi];
 
-  if ( vol.length() < 1 ) return;
+  if ( clearUdi.length() < 1 ) return;
 
   //kdDebug() << __func__ << "(" << udi << ")" << endl;
 
@@ -216,18 +260,18 @@ void HALBackend::slotUmountDevice ( const QString& udi )
   dbus_error_init ( &error );
 
   msg = dbus_message_new_method_call ( "org.freedesktop.Hal",
-                                       vol.ascii(),
+                                       clearUdi.ascii(),
                                        "org.freedesktop.Hal.Device.Volume", "Unmount" );
 
   if ( !msg )
   {
-    kdDebug() << "Failed to create new dbus message. UDI: " << vol << endl;
+    kdDebug() << "Failed to create new dbus message. UDI: " << clearUdi << endl;
     goto error;
   }
 
   if ( !dbus_message_append_args ( msg, DBUS_TYPE_ARRAY, DBUS_TYPE_STRING, &poptions, 0, DBUS_TYPE_INVALID ) )
   {
-    kdDebug() << "Failed to appendd to dbus message. UDI: " << vol << endl;
+    kdDebug() << "Failed to appendd to dbus message. UDI: " << clearUdi << endl;
     goto error;
   }
 
@@ -267,9 +311,9 @@ error:
 
 void HALBackend::slotMountDevice ( const QString& udi )
 {
-  QString vol = luksToClear[udi];
+  QString clearUdi = luksToClear[udi];
 
-  if ( vol.length() < 1 ) return;
+  if ( clearUdi.length() < 1 ) return;
 
   //kdDebug() << __func__ << "(" << udi << ")" << endl;
 
@@ -286,30 +330,30 @@ void HALBackend::slotMountDevice ( const QString& udi )
   dbus_error_init ( &error );
 
   msg = dbus_message_new_method_call ( "org.freedesktop.Hal",
-                                       vol.ascii(),
+                                       clearUdi.ascii(),
                                        "org.freedesktop.Hal.Device.Volume", "Mount" );
 
   if ( !msg )
   {
-    kdDebug() << "Failed to create new dbus message. UDI: " << vol << endl;
+    kdDebug() << "Failed to create new dbus message. UDI: " << clearUdi << endl;
     goto error;
   }
 
   if ( !dbus_message_append_args ( msg, DBUS_TYPE_STRING, &empty, DBUS_TYPE_INVALID ) )
   {
-    kdDebug() << "Failed to appendd to dbus message. UDI: " << vol << endl;
+    kdDebug() << "Failed to appendd to dbus message. UDI: " << clearUdi << endl;
     goto error;
   }
 
   if ( !dbus_message_append_args ( msg, DBUS_TYPE_STRING, &empty, DBUS_TYPE_INVALID ) )
   {
-    kdDebug() << "Failed to appendd to dbus message. UDI: " << vol << endl;
+    kdDebug() << "Failed to appendd to dbus message. UDI: " << clearUdi << endl;
     goto error;
   }
 
   if ( !dbus_message_append_args ( msg, DBUS_TYPE_ARRAY, DBUS_TYPE_STRING, &poptions, 0, DBUS_TYPE_INVALID ) )
   {
-    kdDebug() << "Failed to appendd to dbus message. UDI: " << vol << endl;
+    kdDebug() << "Failed to appendd to dbus message. UDI: " << clearUdi << endl;
     goto error;
   }
 
@@ -496,8 +540,8 @@ HALBackend::VolMapStatus HALBackend::volumeStatus ( const QString &udi )
 
     if ( udi == val )
     {
-      luksToClear.insert ( udi, device_names[i] );
-      clearToLuks.insert ( device_names[i], udi );
+      luksToClear[udi] = device_names[i];
+      clearToLuks[device_names[i]] = udi;
 
       QString blockDev = getHalPropertyString ( device_names[i], "block.device" );
 
@@ -681,13 +725,14 @@ void HALBackend::closeDBus()
 {
   if ( _dBusQtConnection )
   {
-    _dBusQtConnection->close();
     delete _dBusQtConnection;
   }
 
   if ( _dbus_connection )
   {
+    dbus_connection_close ( _dbus_connection );
     dbus_connection_unref ( _dbus_connection );
+    _dbus_connection = 0;
   }
 }
 
@@ -804,8 +849,13 @@ void HALBackend::hal_device_property_modified ( LibHalContext *ctx, const char *
   Q_UNUSED ( is_removed );
   Q_UNUSED ( is_added );
 
-  s_HALBackend->sendInfo ( desc );
-  s_HALBackend->modifyDevice ( QString ( udi ), QString ( key ), added );
+  QString sUdi ( udi );
+
+  if ( !sUdi.startsWith ( "/org/freedesktop/Hal/devices/computer_power_supply_battery_" ) )
+  {
+    s_HALBackend->sendInfo ( desc );
+    s_HALBackend->modifyDevice ( sUdi, QString ( key ), added );
+  }
 }
 
 void HALBackend::hal_device_condition ( LibHalContext *ctx, const char *udi,

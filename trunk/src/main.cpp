@@ -24,6 +24,7 @@
 #include <klocale.h>
 #include <kglobal.h>
 
+#include "halbackend.h"
 #include "kryptapp.h"
 
 static const char* krypt_version  = I18N_NOOP ( KRYPT_VERSION_STRING );
@@ -42,6 +43,7 @@ int main ( int argc, char **argv )
   KAboutData aboutData ( "krypt", I18N_NOOP ( "Krypt" ),
                          krypt_version, krypt_descr, KAboutData::License_GPL,
                          krypt_copy, 0L, krypt_webpage );
+
   aboutData.addAuthor ( "Jakub Schmidtke", 0, "sjakub@users.berlios.de" );
   aboutData.setProductName ( "krypt" );
   aboutData.setTranslator ( I18N_NOOP ( "_: NAME OF TRANSLATORS\\nYour names" ),
@@ -54,7 +56,13 @@ int main ( int argc, char **argv )
   KCmdLineArgs::addCmdLineOptions ( options );
   KApplication::addCmdLineOptions();
 
+  HALBackend::create();
+
   KryptApp app;
 
-  return app.exec();
+  int ret = app.exec();
+
+  HALBackend::destroy();
+
+  return ret;
 }

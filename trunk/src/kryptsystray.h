@@ -25,66 +25,63 @@
 #include <ksystemtray.h>
 #include <kconfig.h>
 
+#include "kryptdevice.h"
+
 class KryptConf;
+
+class KryptApp;
+
+class KPopupMenu;
+
+class KHelpMenu;
 
 class KryptSystemTray :  public KSystemTray
 {
   Q_OBJECT
 
 public:
-  KryptSystemTray ( KConfig *cfg, QWidget *parent = 0, const char *name = 0 );
+  KryptSystemTray ( KryptApp *kryptApp, QWidget *parent = 0, const char *name = 0 );
+  ~KryptSystemTray();
 
   virtual void contextMenuAboutToShow ( KPopupMenu *menu );
 
 signals:
-  void sigUmountDevice ( const QString &udi );
-  void sigMountDevice ( const QString &udi );
-  void sigDecryptDevice ( const QString &udi );
-  void sigEncryptDevice ( const QString &udi );
   void sigConfigChanged();
 
 public slots:
-  void slotDeviceIsEncrypted ( const QString &udi, const QString &desc );
-  void slotDeviceIsMounted ( const QString &udi, const QString &desc );
-  void slotDeviceIsUmounted ( const QString &udi, const QString &desc );
-  void slotDeviceRemoved ( const QString &udi );
   void slotConfigChanged();
 
 protected slots:
-  void slotUmountClicked ( int id );
-  void slotMountClicked ( int id );
-  void slotDecryptClicked ( int id );
-  void slotEncryptClicked ( int id );
   void slotPrefs();
 
 protected:
   void mousePressEvent ( QMouseEvent *e );
 
 private:
-  QMap<QString, int> _udi2ID;
-  QMap<int, QString> _id2Udi;
-  QMap<int, QString> _id2Desc;
+  KryptApp *_kryptApp;
 
-  QValueList<int> _devsIgnored;
+  KPopupMenu *_mountMenu;
+  KPopupMenu *_umountMenu;
+  KPopupMenu *_encryptMenu;
+  KPopupMenu *_decryptMenu;
+  KPopupMenu *_optionMenu;
+  KHelpMenu *_helpMenu;
 
-  QValueList<int> _devsEncrypted;
-  QValueList<int> _devsMounted;
-  QValueList<int> _devsUmounted;
-  QValueList<int> _toEncrypt;
+  QMap<KryptDevice*, KPopupMenu*> _devMenus;
 
-  void removeID ( int id );
-  int getID ( const QString &udi, const QString &desc );
+  bool _groupByCategory;
+  bool _flatMenu;
+
   void loadConfig();
 
   KryptConf* _confDlg;
   KConfig* _cfg;
-  int _nextID;
 
-  bool _showUmount;
-  bool _showMount;
-  bool _showEncrypt;
-  bool _showDecrypt;
-  bool _autoEncrypt;
+  void recreateMenu ( KPopupMenu* menu, bool full );
+  void removeUnneeded ( QValueList<KryptDevice*> & devices );
+  int createCategoryEntries ( KPopupMenu* menu, const QValueList<KryptDevice*> & devices, bool full );
+  int createDevEntries ( KPopupMenu* menu, const QValueList<KryptDevice*> & devices, bool full );
+  KPopupMenu *getDevMenu ( KPopupMenu *menu, KryptDevice *dev );
 };
 
 #endif // _KRYPT_SYS_TRAY_H_

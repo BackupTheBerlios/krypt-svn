@@ -37,17 +37,17 @@ class HALBackend : public QObject
 
 public:
   /**
-   * Default Constructor
-   */
-  HALBackend();
-
-  /**
    * Default Destructor
    */
   virtual ~HALBackend();
 
+  static HALBackend *get();
+  static void create();
+  static void destroy();
+
   bool isOK();
   void initScan();
+  bool isDevicePresent ( const QString& udi );
   bool getDeviceInfo ( const QString& udi,
                        QString &vendor, QString &product,
                        QString &blockDevice, QString &type,
@@ -60,15 +60,10 @@ public slots:
   void slotRemoveDevice ( const QString& udi );
 
 signals:
-  void sigNewInfo ( const QString& info );
+  void sigHALEvent ( int eventID, const QString& udi );
   void sigPassError ( const QString &udi, const QString &errorName, const QString &errorMsg );
+  void sigNewInfo ( const QString& info );
   void sigError ( const QString &udi, const QString &errorName, const QString &errorMsg );
-  void sigDevNew ( const QString& udi );
-  void sigDevRemoved ( const QString& udi );
-  void sigDevMapped ( const QString& udi );
-  void sigDevUnmapped ( const QString& udi );
-  void sigDevMounted ( const QString& udi );
-  void sigDevUmounted ( const QString& udi );
 
 private:
   bool _halOK;
@@ -100,6 +95,10 @@ private:
   void removeDevice ( const QString& udi );
   void modifyDevice ( const QString& udi, const QString& key, bool isAdded );
 
+  /**
+     * Private Constructor
+   */
+  HALBackend();
 
   /* HAL and DBus structures */
 

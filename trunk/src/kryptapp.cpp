@@ -32,114 +32,107 @@
 
 KryptApp::KryptApp() : _cfg ( "kryptrc" )
 {
-  _tray = new KryptSystemTray ( &_cfg, 0L, "KryptSysTray" );
-
-  slotLoadConfig();
+  _tray = new KryptSystemTray ( this, 0L, "KryptSysTray" );
 
   _tray->show();
 
-  _halBackend = new HALBackend();
+  HALBackend *halBackend = HALBackend::get();
 
-  if ( !_halBackend->isOK() ) return;
+  if ( !halBackend->isOK() ) return;
 
-  connect ( _halBackend, SIGNAL ( sigNewInfo ( const QString& ) ),
+  connect ( halBackend, SIGNAL ( sigHALEvent ( int, const QString& ) ),
+            this, SLOT ( slotHALEvent ( int, const QString& ) ) );
+
+  connect ( halBackend, SIGNAL ( sigNewInfo ( const QString& ) ),
             this, SLOT ( slotNewInfo ( const QString& ) ) );
 
-  connect ( _halBackend, SIGNAL ( sigDevNew ( const QString& ) ),
-            this, SLOT ( slotDevNew ( const QString& ) ) );
-
-  connect ( _halBackend, SIGNAL ( sigDevMapped ( const QString& ) ),
-            this, SLOT ( slotDevMapped ( const QString& ) ) );
-
-  connect ( _halBackend, SIGNAL ( sigDevUnmapped ( const QString& ) ),
-            this, SLOT ( slotDevUnmapped ( const QString& ) ) );
-
-  connect ( _halBackend, SIGNAL ( sigDevMounted ( const QString& ) ),
-            this, SLOT ( slotDevMounted ( const QString& ) ) );
-
-  connect ( _halBackend, SIGNAL ( sigDevUmounted ( const QString& ) ),
-            this, SLOT ( slotDevUmounted ( const QString& ) ) );
-
-  connect ( _halBackend, SIGNAL ( sigError ( const QString&, const QString&, const QString& ) ),
+  connect ( halBackend, SIGNAL ( sigError ( const QString&, const QString&, const QString& ) ),
             this, SLOT ( slotError ( const QString&, const QString&, const QString& ) ) );
 
-  connect ( _halBackend, SIGNAL ( sigDevRemoved ( const QString& ) ),
-            _tray, SLOT ( slotDeviceRemoved ( const QString& ) ) );
+  connect ( halBackend, SIGNAL ( sigPassError ( const QString&, const QString&, const QString& ) ),
+            this, SLOT ( slotPassError ( const QString&, const QString&, const QString& ) ) );
 
-  connect ( _tray, SIGNAL ( sigUmountDevice ( const QString& ) ),
-            _halBackend, SLOT ( slotUmountDevice ( const QString& ) ) );
-
-  connect ( _tray, SIGNAL ( sigMountDevice ( const QString& ) ),
-            _halBackend, SLOT ( slotMountDevice ( const QString& ) ) );
-
-  connect ( _tray, SIGNAL ( sigEncryptDevice ( const QString& ) ),
-            _halBackend, SLOT ( slotRemoveDevice ( const QString& ) ) );
-
-  connect ( _tray, SIGNAL ( sigDecryptDevice ( const QString& ) ),
-            this, SLOT ( slotPopPassDialog ( const QString& ) ) );
-
-  connect ( _tray, SIGNAL ( sigConfigChanged() ),
-            this, SLOT ( slotLoadConfig() ) );
-
-  _halBackend->initScan();
+  halBackend->initScan();
 }
 
-QString KryptApp::getUdiDesc ( const QString& udi )
+KryptApp::~KryptApp()
 {
-  QString vendor;
-  QString product;
-  QString blockDev;
-  QString type;
-  QString mountPoint;
+  QMap<QString, KryptDevice*>::ConstIterator it;
 
-  if ( !_halBackend->getDeviceInfo ( udi, vendor, product, blockDev, type, mountPoint ) ) return QString();
-
-  return QString ( "%1 %2 (%3)" ).arg ( vendor ).arg ( product ).arg ( blockDev );
-}
-
-void KryptApp::slotDevNew ( const QString& udi )
-{
-  checkKnown ( udi );
-
-  _tray->slotDeviceIsEncrypted ( udi, getUdiDesc ( udi ) );
-
-  if ( _showPopUp && !_devsIgnored.contains ( udi ) )
+  for ( it =  _udi2Dev.begin(); it != _udi2Dev.end(); ++it )
   {
-    slotPopPassDialog ( udi );
+    delete it.data();
+  }
+
+  _udi2Dev.clear();
+
+  _id2Dev.clear();
+}
+
+QString KryptApp::getHalDevEventDesc ( int eventID ) const
+{
+  switch ( eventID )
+  {
+
+    case KRYPT_HAL_DEV_EVENT_NEW:
+      return "NEW";
+      break;
+
+    case KRYPT_HAL_DEV_EVENT_REMOVED:
+      return "REMOVED";
+      break;
+
+    case KRYPT_HAL_DEV_EVENT_MAPPED:
+      return "MAPPED";
+      break;
+
+    case KRYPT_HAL_DEV_EVENT_UNMAPPED:
+      return "UNMAPPED";
+      break;
+
+    case KRYPT_HAL_DEV_EVENT_MOUNTED:
+      return "MOUNTED";
+      break;
+
+    case KRYPT_HAL_DEV_EVENT_UMOUNTED:
+      return "UMOUNTED";
+      break;
+  }
+
+  return "?????";
+}
+
+void KryptApp::slotHALEvent ( int eventID, const QString& udi )
+{
+  KryptDevice *dev = 0;
+
+  kdDebug() << "HAL Device Event: ID: '" << getHalDevEventDesc ( eventID ) << "'; UDI: '" << udi << "'\n";
+
+  if ( eventID == KRYPT_HAL_DEV_EVENT_REMOVED )
+  {
+    // Don't create this device if it doesn't exist for REMOVED events!
+    dev = getDevice ( udi, false );
+  }
+  else
+  {
+    dev = getDevice ( udi, true );
+  }
+
+  if ( dev != 0 )
+  {
+    dev->slotHALEvent ( eventID, udi );
   }
 }
 
-void KryptApp::slotDevMapped ( const QString &udi )
+void KryptApp::slotPassError ( const QString &udi, const QString &errorName, const QString &errorMsg )
 {
-  checkKnown ( udi );
+  // Don't create this device if it doesn't exist
+  KryptDevice *dev = getDevice ( udi, false );
 
-  _tray->slotDeviceIsUmounted ( udi, getUdiDesc ( udi ) );
-}
-
-void KryptApp::slotDevUnmapped ( const QString &udi )
-{
-  checkKnown ( udi );
-
-  _tray->slotDeviceIsEncrypted ( udi, getUdiDesc ( udi ) );
-}
-
-void KryptApp::slotDevMounted ( const QString &udi )
-{
-  checkKnown ( udi );
-
-  _tray->slotDeviceIsMounted ( udi, getUdiDesc ( udi ) );
-}
-
-void KryptApp::slotDevUmounted ( const QString &udi )
-{
-  checkKnown ( udi );
-
-  _tray->slotDeviceIsUmounted ( udi, getUdiDesc ( udi ) );
-}
-
-void KryptApp::slotNewInfo ( const QString &info )
-{
-  //kdDebug() << info << endl;
+  if ( dev != 0 )
+  {
+    dev->slotPassError ( udi, errorName, errorMsg );
+  }
 }
 
 void KryptApp::slotError ( const QString &udi, const QString &errorName, const QString &errorMsg )
@@ -155,53 +148,46 @@ void KryptApp::slotError ( const QString &udi, const QString &errorName, const Q
   mb->show();
 }
 
-void KryptApp::slotPopPassDialog ( const QString &udi )
+void KryptApp::slotNewInfo ( const QString &info )
 {
-  QString vendor;
-  QString product;
-  QString blockDev;
-  QString type;
-  QString mountPoint;
-
-  if ( !_halBackend->getDeviceInfo ( udi, vendor, product, blockDev, type, mountPoint ) ) return;
-
-  KryptDialog* dialog = new KryptDialog ( udi, vendor, product, blockDev, type );
-
-  connect ( dialog, SIGNAL ( sigPassword ( char *, const char * ) ),
-            _halBackend, SLOT ( slotSendPassword ( char *, const char * ) ) );
-
-  connect ( _halBackend, SIGNAL ( sigPassError ( const QString&, const QString&, const QString& ) ),
-            dialog, SLOT ( slotPassError ( const QString&, const QString&, const QString& ) ) );
-
-  connect ( _halBackend, SIGNAL ( sigDevRemoved ( const QString& ) ),
-            dialog, SLOT ( slotDevRemoved ( const QString& ) ) );
-
-  connect ( _halBackend, SIGNAL ( sigDevMapped ( const QString& ) ),
-            dialog, SLOT ( slotDevMapped ( const QString& ) ) );
-
-  dialog->show();
+  kdDebug() << info << endl;
 }
 
-void KryptApp::slotLoadConfig()
+KryptDevice * KryptApp::getDevice ( const QString &udi, bool create )
 {
-  _cfg.setGroup ( KRYPT_CONF_APP_GROUP );
-  _showPopUp = _cfg.readBoolEntry ( KRYPT_CONF_APP_SHOW_POPUP, true );
-
-  _cfg.setGroup ( KRYPT_CONF_DEVICES_GROUP );
-  _devsKnown = _cfg.readListEntry ( KRYPT_CONF_DEVICES_KNOWN );
-  _devsIgnored = _cfg.readListEntry ( KRYPT_CONF_DEVICES_IGNORED );
-}
-
-void KryptApp::checkKnown ( const QString &udi )
-{
-  if ( !_devsKnown.contains ( udi ) )
+  if ( !_udi2Dev.contains ( udi ) )
   {
-    _devsKnown.append ( udi );
+    if ( !create ) return 0;
 
-    _cfg.setGroup ( KRYPT_CONF_DEVICES_GROUP );
-    _cfg.writeEntry ( KRYPT_CONF_DEVICES_KNOWN, _devsKnown );
+    KryptDevice * nDev = new KryptDevice ( this, udi );
 
-    _cfg.setGroup ( KRYPT_CONF_DEVICE_DESC_GROUP );
-    _cfg.writeEntry ( udi, getUdiDesc ( udi ) );
+    _udi2Dev.insert ( udi, nDev );
+
+    _id2Dev.insert ( nDev->getID(), nDev );
+
+    connect ( _tray, SIGNAL ( sigConfigChanged() ),
+              nDev, SLOT ( slotLoadConfig() ) );
   }
+
+  return _udi2Dev[udi];
+}
+
+KryptDevice * KryptApp::getDevice ( int id )
+{
+  if ( !_id2Dev.contains ( id ) )
+  {
+    return 0;
+  }
+
+  return _id2Dev[id];
+}
+
+KConfig * KryptApp::getConfig()
+{
+  return &_cfg;
+}
+
+QValueList<KryptDevice*> KryptApp::getDevices() const
+{
+  return _udi2Dev.values();
 }

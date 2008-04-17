@@ -25,8 +25,11 @@
 #include <config.h>
 #endif
 
+#include <qmap.h>
 #include <kconfig.h>
 #include <kuniqueapplication.h>
+
+#include "kryptdevice.h"
 
 class KryptSystemTray;
 
@@ -38,29 +41,25 @@ class KryptApp : public KUniqueApplication
 
 public:
   KryptApp();
+  ~KryptApp();
+
+  QValueList<KryptDevice*> getDevices() const;
+  KryptDevice * getDevice ( const QString &udi, bool create );
+  KryptDevice * getDevice ( int id );
+  KConfig * getConfig();
+  QString getHalDevEventDesc ( int eventID ) const;
 
 protected slots:
-  void slotDevNew ( const QString &udi );
-  void slotDevMapped ( const QString &udi );
-  void slotDevUnmapped ( const QString &udi );
-  void slotDevMounted ( const QString &udi );
-  void slotDevUmounted ( const QString &udi );
-  void slotNewInfo ( const QString &info );
-  void slotPopPassDialog ( const QString &udi );
+  void slotHALEvent ( int eventID, const QString &udi );
   void slotError ( const QString &udi, const QString &errorName, const QString &errorMsg );
-  void slotLoadConfig();
+  void slotPassError ( const QString &udi, const QString &errorName, const QString &errorMsg );
+  void slotNewInfo ( const QString &info );
 
 protected:
   KConfig _cfg;
   KryptSystemTray *_tray;
-  HALBackend* _halBackend;
-  bool _showPopUp;
-  QStringList _devsKnown;
-  QStringList _devsIgnored;
-
-  QString getUdiDesc ( const QString& udi );
-
-  void checkKnown ( const QString &udi );
+  QMap<QString, KryptDevice*> _udi2Dev;
+  QMap<int, KryptDevice*> _id2Dev;
 };
 
 #endif // _KRYPT_APP_H_

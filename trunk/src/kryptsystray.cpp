@@ -30,12 +30,36 @@
 
 #include "kryptglobal.h"
 #include "kryptconf.h"
+#include "kryptapp.h"
 #include "kryptsystray.h"
 #include "kryptsystray.moc"
 
-KryptSystemTray::KryptSystemTray ( KConfig *cfg, QWidget* parent, const char *name )
-    : KSystemTray ( parent, name ), _confDlg ( 0 ), _cfg ( cfg ), _nextID ( 1 )
+KryptSystemTray::KryptSystemTray ( KryptApp *kryptApp, QWidget* parent, const char *name )
+    : KSystemTray ( parent, name ), _kryptApp ( kryptApp )
 {
+  _confDlg = 0;
+  _cfg = kryptApp->getConfig();
+
+  _groupByCategory = false;
+  _flatMenu = false;
+
+  _mountMenu = new KPopupMenu ( this->contextMenu (), "mountmenu" );
+  _umountMenu = new KPopupMenu ( this->contextMenu (), "umountmenu" );
+  _encryptMenu = new KPopupMenu ( this->contextMenu (), "encryptmenu" );
+  _decryptMenu = new KPopupMenu ( this->contextMenu (), "decryptmenu" );
+  _optionMenu = new KPopupMenu ( this->contextMenu (), "optionmenu" );
+  _helpMenu    = new KHelpMenu ( this, KGlobal::instance ()->aboutData (), false );
+
+  _mountMenu->setCheckable ( false );
+  _umountMenu->setCheckable ( false );
+  _encryptMenu->setCheckable ( false );
+  _decryptMenu->setCheckable ( false );
+  _optionMenu->setCheckable ( false );
+
+  _helpMenu->menu ()->removeItemAt ( KHelpMenu::menuHelpContents );
+  /* once the help menu is gone, remove the separator which is at position KHelpMenu::menuHelpContents now */
+  _helpMenu->menu ()->removeItemAt ( KHelpMenu::menuHelpContents );
+
   loadConfig();
 
   setPixmap ( KSystemTray::loadIcon ( "krypt" ) );
@@ -44,12 +68,32 @@ KryptSystemTray::KryptSystemTray ( KConfig *cfg, QWidget* parent, const char *na
   QToolTip::add ( this, i18n ( "Control LUKS encrypted volumes" ) );
 }
 
+KryptSystemTray::~KryptSystemTray()
+{
+  delete _mountMenu;
+  delete _umountMenu;
+  delete _encryptMenu;
+  delete _decryptMenu;
+  delete _optionMenu;
+  delete _helpMenu;
+
+  QMap<KryptDevice*, KPopupMenu*>::ConstIterator it;
+
+  for ( it =  _devMenus.begin(); it != _devMenus.end(); ++it )
+  {
+    delete it.data();
+  }
+
+  _devMenus.clear();
+}
+
 void KryptSystemTray::mousePressEvent ( QMouseEvent* e )
 {
   // Popup the context menu with left-click
   if ( e->button() == LeftButton )
   {
-    contextMenuAboutToShow ( contextMenu() );
+    // Show the same context menu, but without help and configuration options
+    recreateMenu ( contextMenu(), false );
     contextMenu()->popup ( e->globalPos() );
     e->accept();
     return;
@@ -58,124 +102,420 @@ void KryptSystemTray::mousePressEvent ( QMouseEvent* e )
   KSystemTray::mousePressEvent ( e );
 }
 
-void KryptSystemTray::contextMenuAboutToShow ( KPopupMenu* menu )
+void KryptSystemTray::removeUnneeded ( QValueList<KryptDevice*> & devices )
+{
+  // Removes devices from the list to be added to the menu
+  // as well as menu objects that are not needed anymore
+  QValueList<KryptDevice*>::Iterator it = devices.begin();
+  QValueList<KryptDevice*>::Iterator itEnd = devices.end();
+
+  while ( it != itEnd )
+  {
+    KryptDevice *dev = *it;
+
+    // Menu entry for this device is not needed...
+
+    if ( _flatMenu || _groupByCategory || !dev->isPresent() || dev->isIgnored() )
+    {
+      // ... but it exists
+      if ( _devMenus.contains ( dev ) )
+      {
+        delete _devMenus[dev];
+        _devMenus.remove ( dev );
+      }
+    }
+
+    // This device is not needed
+    if ( !dev->isPresent() || dev->isIgnored() )
+    {
+      it = devices.remove ( it );
+    }
+    else
+    {
+      ++it;
+    }
+  }
+}
+
+int KryptSystemTray::createCategoryEntries ( KPopupMenu* menu, const QValueList<KryptDevice*> & devices, bool full )
+{
+  int lastIndex = 0;
+  QValueList<KryptDevice*>::ConstIterator itBeg = devices.begin();
+  QValueList<KryptDevice*>::ConstIterator itEnd = devices.end();
+  QValueList<KryptDevice*>::ConstIterator it;
+  KryptDevice *dev;
+  bool added;
+
+  added = false;
+
+  // UMOUNT Category
+
+  for ( it = itBeg; it != itEnd; ++it )
+  {
+    dev = *it;
+
+    if ( dev->showUMount() && dev->isMounted() )
+    {
+      if ( _flatMenu )
+      {
+        if ( !added )
+        {
+          lastIndex = menu->insertTitle ( UserIcon ( "umount" ), i18n ( "Umount Volume" ) );
+          added = true;
+        }
+
+        lastIndex = menu->insertItem ( dev->getIcon(), dev->getDesc(), dev, SLOT ( slotClickUMount() ) );
+      }
+
+      else
+      {
+        if ( !added )
+        {
+          _umountMenu->clear();
+          lastIndex = menu->insertItem ( UserIcon ( "umount" ), i18n ( "Umount Volume" ), _umountMenu, -1 );
+          added = true;
+        }
+
+        _umountMenu->insertItem ( dev->getIcon(), dev->getDesc(), dev, SLOT ( slotClickUMount() ) );
+      }
+    }
+  }
+
+  added = false;
+
+  // MOUNT Category
+
+  for ( it = itBeg; it != itEnd; ++it )
+  {
+    dev = *it;
+
+    if ( dev->showMount() && !dev->isMounted() && dev->isDecrypted() )
+    {
+      if ( _flatMenu )
+      {
+        if ( !added )
+        {
+          lastIndex = menu->insertTitle ( UserIcon ( "mount" ), i18n ( "Mount Volume" ) );
+          added = true;
+        }
+
+        lastIndex = menu->insertItem ( dev->getIcon(), dev->getDesc(), dev, SLOT ( slotClickMount() ) );
+      }
+
+      else
+      {
+        if ( !added )
+        {
+          _mountMenu->clear();
+          lastIndex = menu->insertItem ( UserIcon ( "mount" ), i18n ( "Mount Volume" ), _mountMenu, -1 );
+          added = true;
+        }
+
+        _mountMenu->insertItem ( dev->getIcon(), dev->getDesc(), dev, SLOT ( slotClickMount() ) );
+      }
+    }
+  }
+
+  added = false;
+
+  // ENCRYPT Category
+
+  for ( it = itBeg; it != itEnd; ++it )
+  {
+    dev = *it;
+
+    if ( dev->showEncrypt() && dev->isDecrypted() )
+    {
+      if ( _flatMenu )
+      {
+        if ( !added )
+        {
+          lastIndex = menu->insertTitle ( UserIcon ( "encrypt" ), i18n ( "Encrypt Volume" ) );
+          added = true;
+        }
+
+        lastIndex = menu->insertItem ( dev->getIcon(), dev->getDesc(), dev, SLOT ( slotClickEncrypt() ) );
+      }
+
+      else
+      {
+        if ( !added )
+        {
+          _encryptMenu->clear();
+          lastIndex = menu->insertItem ( UserIcon ( "encrypt" ), i18n ( "Encrypt Volume" ), _encryptMenu, -1 );
+          added = true;
+        }
+
+        _encryptMenu->insertItem ( dev->getIcon(), dev->getDesc(), dev, SLOT ( slotClickEncrypt() ) );
+      }
+    }
+  }
+
+  added = false;
+
+  // DECRYPT Category
+
+  for ( it = itBeg; it != itEnd; ++it )
+  {
+    dev = *it;
+
+    if ( dev->showDecrypt() && !dev->isDecrypted() )
+    {
+      if ( _flatMenu )
+      {
+        if ( !added )
+        {
+          lastIndex = menu->insertTitle ( UserIcon ( "decrypt" ), i18n ( "Decrypt Volume" ) );
+          added = true;
+        }
+
+        lastIndex = menu->insertItem ( dev->getIcon(), dev->getDesc(), dev, SLOT ( slotClickDecrypt() ) );
+      }
+
+      else
+      {
+        if ( !added )
+        {
+          _decryptMenu->clear();
+          lastIndex = menu->insertItem ( UserIcon ( "decrypt" ), i18n ( "Decrypt Volume" ), _decryptMenu, -1 );
+          added = true;
+        }
+
+        _decryptMenu->insertItem ( dev->getIcon(), dev->getDesc(), dev, SLOT ( slotClickDecrypt() ) );
+      }
+    }
+  }
+
+  added = false;
+
+  if ( full )
+  {
+    // OPTIONS Category
+
+    for ( it = itBeg; it != itEnd; ++it )
+    {
+      dev = *it;
+
+      if ( dev->showOptions() )
+      {
+        if ( _flatMenu )
+        {
+          if ( !added )
+          {
+            lastIndex = menu->insertTitle ( SmallIcon ( "configure" ), i18n ( "Volume Options" ) );
+            added = true;
+          }
+
+          lastIndex = menu->insertItem ( dev->getIcon(), dev->getDesc(), dev, SLOT ( slotClickOptions() ) );
+        }
+
+        else
+        {
+          if ( !added )
+          {
+            _optionMenu->clear();
+            lastIndex = menu->insertItem ( SmallIconSet ( "configure" ), i18n ( "Volume Options" ), _optionMenu, -1 );
+            added = true;
+          }
+
+          _optionMenu->insertItem ( dev->getIcon(), dev->getDesc(), dev, SLOT ( slotClickOptions() ) );
+        }
+      }
+    }
+  }
+
+  return lastIndex;
+}
+
+KPopupMenu *KryptSystemTray::getDevMenu ( KPopupMenu *menu, KryptDevice *dev )
+{
+  if ( !_devMenus.contains ( dev ) )
+  {
+    _devMenus[dev] = new KPopupMenu ( menu, dev->getUDI() );
+  }
+
+  return _devMenus[dev];
+}
+
+int KryptSystemTray::createDevEntries ( KPopupMenu* menu, const QValueList<KryptDevice*> & devices, bool full )
+{
+  int lastIndex = 0;
+  QValueList<KryptDevice*>::ConstIterator itBeg = devices.begin();
+  QValueList<KryptDevice*>::ConstIterator itEnd = devices.end();
+  QValueList<KryptDevice*>::ConstIterator it;
+  KryptDevice *dev;
+
+  for ( it = itBeg; it != itEnd; ++it )
+  {
+    bool added = false;
+    KPopupMenu *devMenu = 0;
+    dev = *it;
+
+    // UMOUNT
+
+    if ( dev->showUMount() && dev->isMounted() )
+    {
+      if ( _flatMenu )
+      {
+        if ( !added )
+        {
+          lastIndex = menu->insertTitle ( dev->getIcon(), dev->getDesc() );
+          added = true;
+        }
+
+        lastIndex = menu->insertItem ( UserIcon ( "umount" ), i18n ( "Umount Volume" ) , dev, SLOT ( slotClickUMount() ) );
+      }
+      else
+      {
+        if ( !devMenu ) devMenu = getDevMenu ( menu, dev );
+
+        if ( !added )
+        {
+          devMenu->clear();
+          lastIndex = menu->insertItem ( dev->getIcon(), dev->getDesc(), devMenu, -1 );
+          added = true;
+        }
+
+        devMenu->insertItem ( UserIcon ( "umount" ), i18n ( "Umount Volume" ) , dev, SLOT ( slotClickUMount() ) );
+      }
+    }
+
+    // MOUNT
+    if ( dev->showMount() && !dev->isMounted() && dev->isDecrypted() )
+    {
+      if ( _flatMenu )
+      {
+        if ( !added )
+        {
+          lastIndex = menu->insertTitle ( dev->getIcon(), dev->getDesc() );
+          added = true;
+        }
+
+        lastIndex = menu->insertItem ( UserIcon ( "mount" ), i18n ( "Mount Volume" ) , dev, SLOT ( slotClickMount() ) );
+      }
+      else
+      {
+        if ( !devMenu ) devMenu = getDevMenu ( menu, dev );
+
+        if ( !added )
+        {
+          devMenu->clear();
+          lastIndex = menu->insertItem ( dev->getIcon(), dev->getDesc(), devMenu, -1 );
+          added = true;
+        }
+
+        devMenu->insertItem ( UserIcon ( "mount" ), i18n ( "Mount Volume" ) , dev, SLOT ( slotClickMount() ) );
+      }
+    }
+
+    // ENCRYPT
+    if ( dev->showEncrypt() && dev->isDecrypted() )
+    {
+      if ( _flatMenu )
+      {
+        if ( !added )
+        {
+          lastIndex = menu->insertTitle ( dev->getIcon(), dev->getDesc() );
+          added = true;
+        }
+
+        lastIndex = menu->insertItem ( UserIcon ( "encrypt" ), i18n ( "Encrypt Volume" ) , dev, SLOT ( slotClickEncrypt() ) );
+      }
+      else
+      {
+        if ( !devMenu ) devMenu = getDevMenu ( menu, dev );
+
+        if ( !added )
+        {
+          devMenu->clear();
+          lastIndex = menu->insertItem ( dev->getIcon(), dev->getDesc(), devMenu, -1 );
+          added = true;
+        }
+
+        devMenu->insertItem ( UserIcon ( "encrypt" ), i18n ( "Encrypt Volume" ) , dev, SLOT ( slotClickEncrypt() ) );
+      }
+    }
+
+    // DECRYPT
+    if ( dev->showDecrypt() && !dev->isDecrypted() )
+    {
+      if ( _flatMenu )
+      {
+        if ( !added )
+        {
+          lastIndex = menu->insertTitle ( dev->getIcon(), dev->getDesc() );
+          added = true;
+        }
+
+        lastIndex = menu->insertItem ( UserIcon ( "decrypt" ), i18n ( "Decrypt Volume" ) , dev, SLOT ( slotClickDecrypt() ) );
+      }
+      else
+      {
+        if ( !devMenu ) devMenu = getDevMenu ( menu, dev );
+
+        if ( !added )
+        {
+          devMenu->clear();
+          lastIndex = menu->insertItem ( dev->getIcon(), dev->getDesc(), devMenu, -1 );
+          added = true;
+        }
+
+        devMenu->insertItem ( UserIcon ( "decrypt" ), i18n ( "Decrypt Volume" ) , dev, SLOT ( slotClickDecrypt() ) );
+      }
+    }
+
+    // OPTIONS
+    if ( full && dev->showEncrypt() )
+    {
+      if ( _flatMenu )
+      {
+        if ( !added )
+        {
+          lastIndex = menu->insertTitle ( dev->getIcon(), dev->getDesc() );
+          added = true;
+        }
+
+        lastIndex = menu->insertItem ( SmallIconSet ( "configure" ), i18n ( "Volume Options" ) , dev, SLOT ( slotClickOptions() ) );
+      }
+      else
+      {
+        if ( !devMenu ) devMenu = getDevMenu ( menu, dev );
+
+        if ( !added )
+        {
+          devMenu->clear();
+          lastIndex = menu->insertItem ( dev->getIcon(), dev->getDesc(), devMenu, -1 );
+          added = true;
+        }
+
+        devMenu->insertItem ( SmallIconSet ( "configure" ), i18n ( "Volume Options" ) , dev, SLOT ( slotClickOptions() ) );
+      }
+    }
+  }
+
+  return lastIndex;
+}
+
+void KryptSystemTray::recreateMenu ( KPopupMenu* menu, bool full )
 {
   int lastIndex = 0;
 
   menu->clear();
 
-  QValueList<int>::Iterator it;
+  QValueList<KryptDevice*> devices = _kryptApp->getDevices();
 
-  if ( _showUmount )
+  // This will remove devices that should be ignored, or are no longer
+  // present. It will also clean any unnecessary _devMenus entries
+  // and delete their KPopupMenu objects.
+  removeUnneeded ( devices );
+
+  if ( _groupByCategory )
   {
-    bool addedMenu = false;
-
-    for ( it = _devsMounted.begin(); it != _devsMounted.end(); ++it )
-    {
-      if ( !_devsIgnored.contains ( *it ) )
-      {
-        if ( !addedMenu )
-        {
-          addedMenu = true;
-
-          menu->insertTitle ( UserIcon ( "umount" ), i18n ( "Umount Volume" ) );
-        }
-
-        lastIndex = menu->insertItem ( _id2Desc[*it] );
-
-        menu->setItemParameter ( lastIndex, *it );
-        menu->connectItem ( lastIndex, this, SLOT ( slotUmountClicked ( int ) ) );
-      }
-    }
+    lastIndex = createCategoryEntries ( menu, devices, full );
   }
-
-  if ( _showMount )
+  else
   {
-    bool addedMenu = false;
-
-    for ( it = _devsUmounted.begin(); it != _devsUmounted.end(); ++it )
-    {
-      if ( !_devsIgnored.contains ( *it ) )
-      {
-        if ( !addedMenu )
-        {
-          addedMenu = true;
-
-          menu->insertTitle ( UserIcon ( "mount" ), i18n ( "Mount Volume" ) );
-        }
-
-        lastIndex = menu->insertItem ( _id2Desc[*it] );
-
-        menu->setItemParameter ( lastIndex, *it );
-        menu->connectItem ( lastIndex, this, SLOT ( slotMountClicked ( int ) ) );
-      }
-    }
-  }
-
-  if ( _showEncrypt )
-  {
-    bool addedMenu = false;
-
-    for ( it = _devsUmounted.begin(); it != _devsUmounted.end(); ++it )
-    {
-      if ( !_devsIgnored.contains ( *it ) )
-      {
-        if ( !addedMenu )
-        {
-          addedMenu = true;
-
-          menu->insertTitle ( UserIcon ( "encrypt" ), i18n ( "Encrypt Volume" ) );
-        }
-
-        lastIndex = menu->insertItem ( _id2Desc[*it] );
-
-        menu->setItemParameter ( lastIndex, *it );
-        menu->connectItem ( lastIndex, this, SLOT ( slotEncryptClicked ( int ) ) );
-      }
-    }
-
-    // No addedMenu reset!
-
-    for ( it = _devsMounted.begin(); it != _devsMounted.end(); ++it )
-    {
-      if ( !_devsIgnored.contains ( *it ) )
-      {
-        if ( !addedMenu )
-        {
-          addedMenu = true;
-
-          menu->insertTitle ( UserIcon ( "encrypt" ), i18n ( "Encrypt Volume" ) );
-        }
-
-        lastIndex = menu->insertItem ( _id2Desc[*it] );
-
-        menu->setItemParameter ( lastIndex, *it );
-        menu->connectItem ( lastIndex, this, SLOT ( slotEncryptClicked ( int ) ) );
-      }
-    }
-  }
-
-  if ( _showDecrypt )
-  {
-    bool addedMenu = false;
-
-    for ( it = _devsEncrypted.begin(); it != _devsEncrypted.end(); ++it )
-    {
-      if ( !_devsIgnored.contains ( *it ) )
-      {
-        if ( !addedMenu )
-        {
-          addedMenu = true;
-
-          menu->insertTitle ( UserIcon ( "decrypt" ), i18n ( "Decrypt Volume" ) );
-        }
-
-        lastIndex = menu->insertItem ( _id2Desc[*it] );
-
-        menu->setItemParameter ( lastIndex, *it );
-        menu->connectItem ( lastIndex, this, SLOT ( slotDecryptClicked ( int ) ) );
-      }
-    }
+    lastIndex = createDevEntries ( menu, devices, full );
   }
 
   if ( !lastIndex )
@@ -184,26 +524,27 @@ void KryptSystemTray::contextMenuAboutToShow ( KPopupMenu* menu )
     menu->setItemEnabled ( lastIndex, false );
   }
 
-  menu->insertSeparator();
+  if ( full )
+  {
+    menu->insertSeparator();
 
-  KAction *actPrefs = new KAction ( i18n ( "Configure Krypt..." ),
-                                    SmallIconSet ( "configure" ), KShortcut(), this, SLOT ( slotPrefs() ),
-                                    actionCollection() );
-  actPrefs->plug ( menu );
+    KAction *actPrefs = new KAction ( i18n ( "Configure Krypt..." ),
+                                      SmallIconSet ( "configure" ), KShortcut(), this, SLOT ( slotPrefs() ),
+                                      actionCollection() );
+    actPrefs->plug ( menu );
 
-  /* Help menu */
-  KHelpMenu* helpMenu = new KHelpMenu ( this, KGlobal::instance ()->aboutData (), false );
+    /* Help menu */
+    menu->insertItem ( SmallIcon ( "help" ), i18n ( "&Help" ), _helpMenu->menu () );
+    menu->insertSeparator ();
 
-  helpMenu->menu ()->removeItemAt ( KHelpMenu::menuHelpContents );
-  /* once the help menu is gone, remove the separator which is at position KHelpMenu::menuHelpContents now */
-  helpMenu->menu ()->removeItemAt ( KHelpMenu::menuHelpContents );
+    KAction *quitAction = actionCollection()->action ( KStdAction::name ( KStdAction::Quit ) );
+    quitAction->plug ( menu );
+  }
+}
 
-  menu->insertItem ( SmallIcon ( "help" ), i18n ( "&Help" ), helpMenu->menu () );
-
-  menu->insertSeparator ();
-
-  KAction *quitAction = actionCollection()->action ( KStdAction::name ( KStdAction::Quit ) );
-  quitAction->plug ( menu );
+void KryptSystemTray::contextMenuAboutToShow ( KPopupMenu* menu )
+{
+  recreateMenu ( menu, true );
 }
 
 void KryptSystemTray::slotConfigChanged()
@@ -221,126 +562,10 @@ void KryptSystemTray::slotConfigChanged()
 
 void KryptSystemTray::loadConfig()
 {
-  _cfg->setGroup ( KRYPT_CONF_TRAY_GROUP );
+  _cfg->setGroup ( KRYPT_CONF_GLOBAL_GROUP );
 
-  _showUmount = _cfg->readBoolEntry ( KRYPT_CONF_TRAY_SHOW_UMOUNT, true );
-  _showMount = _cfg->readBoolEntry ( KRYPT_CONF_TRAY_SHOW_MOUNT, true );
-  _showEncrypt = _cfg->readBoolEntry ( KRYPT_CONF_TRAY_SHOW_ENCRYPT, true );
-  _showDecrypt = _cfg->readBoolEntry ( KRYPT_CONF_TRAY_SHOW_DECRYPT, true );
-  _autoEncrypt = _cfg->readBoolEntry ( KRYPT_CONF_TRAY_AUTO_ENCRYPT, true );
-
-  _cfg->setGroup ( KRYPT_CONF_DEVICES_GROUP );
-
-  QStringList ignored = _cfg->readListEntry ( KRYPT_CONF_DEVICES_IGNORED );
-
-  _devsIgnored.clear();
-
-  _cfg->setGroup ( KRYPT_CONF_DEVICE_DESC_GROUP );
-
-  for ( QStringList::Iterator it = ignored.begin(); it != ignored.end(); ++it )
-  {
-    QString udi = *it;
-    int id = getID ( udi, _cfg->readEntry ( udi, "unknown" ) );
-
-    _devsIgnored.append ( id );
-  }
-}
-
-void KryptSystemTray::slotDeviceIsEncrypted ( const QString &udi, const QString &desc )
-{
-  int id = getID ( udi, desc );
-  removeID ( id );
-  _devsEncrypted.append ( id );
-}
-
-void KryptSystemTray::slotDeviceIsMounted ( const QString &udi, const QString &desc )
-{
-  int id = getID ( udi, desc );
-  removeID ( id );
-  _devsMounted.append ( id );
-}
-
-void KryptSystemTray::slotDeviceIsUmounted ( const QString &udi, const QString &desc )
-{
-  bool doEnc = false;
-
-  int id = getID ( udi, desc );
-
-  if ( _toEncrypt.contains ( id ) || ( _devsMounted.contains ( id ) && _autoEncrypt ) )
-  {
-    doEnc = true;
-  }
-
-  removeID ( id );
-
-  _devsUmounted.append ( id );
-
-  if ( doEnc )
-  {
-    _toEncrypt.remove ( id );
-    emit sigEncryptDevice ( udi );
-  }
-}
-
-void KryptSystemTray::slotDeviceRemoved ( const QString &udi )
-{
-  if ( _udi2ID.contains ( udi ) )
-  {
-    removeID ( _udi2ID[udi] );
-  }
-}
-
-void KryptSystemTray::slotUmountClicked ( int id )
-{
-  if ( _id2Udi.contains ( id ) ) emit sigUmountDevice ( _id2Udi[id] );
-}
-
-void KryptSystemTray::slotMountClicked ( int id )
-{
-  if ( _id2Udi.contains ( id ) ) emit sigMountDevice ( _id2Udi[id] );
-}
-
-void KryptSystemTray::slotDecryptClicked ( int id )
-{
-  if ( _id2Udi.contains ( id ) ) emit sigDecryptDevice ( _id2Udi[id] );
-}
-
-void KryptSystemTray::slotEncryptClicked ( int id )
-{
-  if ( _id2Udi.contains ( id ) )
-  {
-    if ( _devsMounted.contains ( id ) )
-    {
-      emit sigUmountDevice ( _id2Udi[id] );
-      _toEncrypt.remove ( id );
-      _toEncrypt.append ( id );
-    }
-    else
-    {
-      emit sigEncryptDevice ( _id2Udi[id] );
-    }
-  }
-}
-
-void KryptSystemTray::removeID ( int id )
-{
-  _devsEncrypted.remove ( id );
-  _devsMounted.remove ( id );
-  _devsUmounted.remove ( id );
-}
-
-int KryptSystemTray::getID ( const QString &udi, const QString &desc )
-{
-  if ( !_udi2ID.contains ( udi ) )
-  {
-    int id = _nextID++;
-
-    _udi2ID.insert ( udi, id );
-    _id2Udi.insert ( id, udi );
-    _id2Desc.insert ( id, desc );
-  }
-
-  return _udi2ID[udi];
+  _groupByCategory = _cfg->readBoolEntry ( KRYPT_CONF_GROUP_BY_CAT, false );
+  _flatMenu = _cfg->readBoolEntry ( KRYPT_CONF_FLAT_MENU, false );
 }
 
 void KryptSystemTray::slotPrefs()

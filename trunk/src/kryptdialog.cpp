@@ -20,27 +20,29 @@
 
 #include <string.h>
 
+#include "kryptdevice.h"
 #include "kryptdialog.h"
 #include "kryptdialog.moc"
 #include "decryptdialog.h"
 
-KryptDialog::KryptDialog ( const QString &udi, const QString &vendor,
-                           const QString &product, const QString &dev, const QString &devType ) :
-    KDialogBase ( NULL, "Dialog", true, "Decrypt Storage Device", ( Cancel | User1 ),
-                  User1, false, KGuiItem ( i18n ( "Decrypt" ), "decrypted" ) )
-    , _dlg ( 0 ), _udi ( udi ), _device ( dev ), _cUDI ( 0 )
+KryptDialog::KryptDialog ( KryptDevice *kryptDev ) :
+    KDialogBase ( NULL, "Dialog", true, i18n ( "Decrypt Storage Device" ), ( Cancel | User1 ),
+                  User1, false, KGuiItem ( i18n ( "Decrypt" ), "decrypted" ) ),
+    _kryptDev ( kryptDev ), _dlg ( 0 )
 {
-  _cUDI = new char[_udi.length() + 1];
-  memcpy ( _cUDI, _udi.ascii(), _udi.length() + 1 );
-
   _dlg = new DecryptDialog ( this );
 
   _dlg->errorBox->hide();
-  _dlg->descLabel->setText ( _dlg->descLabel->text().arg ( vendor ).arg ( product ).arg ( _device ) );
+
+  _dlg->descLabel->setText ( _dlg->descLabel->text().
+                             arg ( _kryptDev->getVendor() ).
+                             arg ( _kryptDev->getProduct() ).
+                             arg ( _kryptDev->getBlockDev() ) );
+
   _dlg->descLabel->adjustSize();
   _dlg->adjustSize();
 
-  setDeviceIcon ( devType );
+  _dlg->encryptedIcon->setPixmap ( _kryptDev->getIcon() );
 
   enableButton ( User1, false );
 
@@ -58,33 +60,7 @@ KryptDialog::KryptDialog ( const QString &udi, const QString &vendor,
 
 KryptDialog::~KryptDialog()
 {
-  if ( _cUDI ) delete[] _cUDI;
-
   delete _dlg;
-}
-
-void KryptDialog::setDeviceIcon ( QString deviceType )
-{
-  QString deviceIcon;
-
-  if ( deviceType == "memory_stick"
-       || deviceType == "cdrom"
-       || deviceType == "sd_mmc"
-       || deviceType == "compact_flash"
-       || deviceType == "smart_media"
-       || deviceType == "zip" )
-  {
-
-    deviceIcon = QString ( "%1_unmount" ).arg ( deviceType );
-  }
-  else
-  {
-    deviceIcon = QString ( "hdd_unmount" );
-  }
-
-  QPixmap pixmap = KGlobal::iconLoader()->loadIcon ( deviceIcon, KIcon::NoGroup, KIcon::SizeLarge );
-
-  _dlg->encryptedIcon->setPixmap ( pixmap );
 }
 
 QString KryptDialog::getPassword()
@@ -92,24 +68,8 @@ QString KryptDialog::getPassword()
   return _dlg->passwordEdit->text();
 }
 
-void KryptDialog::slotDevRemoved ( const QString &udi )
+void KryptDialog::slotPassError ( const QString &errName, const QString &errMsg )
 {
-  if ( udi == _udi )
-  {
-    this->deleteLater();
-  }
-}
-
-void KryptDialog::slotDevMapped ( const QString &udi )
-{
-  // Same action - we close the dialog!
-  slotDevRemoved ( udi );
-}
-
-void KryptDialog::slotPassError ( const QString& udi, const QString &errName, const QString &errMsg )
-{
-  if ( udi != _udi ) return;
-
   QString error = QString::null;
 
   if ( errName == "org.freedesktop.Hal.Device.Volume.Crypto.SetupPasswordError" )
@@ -119,11 +79,11 @@ void KryptDialog::slotPassError ( const QString& udi, const QString &errName, co
   else if ( errName == "org.freedesktop.Hal.Device.Volume.Crypto.CryptSetupMissing" )
   {
     error = QString ( i18n ( "Decryption failed! Application \"cryptsetup\" not found. "
-                             "Is package \"util-linux-crypto\" installed?" ) );
+                             "Is package with \"cryptsetup\" installed?" ) );
   }
   else if ( errName == "org.freedesktop.Hal.Device.Volume.Crypto.SetupError" )
   {
-    error = QString ( i18n ( "%1 is already decrypted!" ).arg ( _device ) );
+    error = QString ( i18n ( "%1 is already decrypted!" ).arg ( _kryptDev->getBlockDev() ) );
   }
   else
   {
@@ -144,10 +104,11 @@ void KryptDialog::slotDecrypt()
 {
   if ( _dlg->passwordEdit->text().isEmpty() ) return;
 
-  emit sigPassword ( _cUDI, _dlg->passwordEdit->text().ascii() );
+  _kryptDev->slotPassDecrypt ( _dlg->passwordEdit->text() );
 }
 
 void KryptDialog::slotCancel()
 {
+  _kryptDev->passDialogCanceled();
   this->deleteLater();
 }

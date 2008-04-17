@@ -21,22 +21,32 @@
 #ifndef _KRYPT_GLOBAL_H_
 #define _KRYPT_GLOBAL_H_
 
-#define KRYPT_CONF_APP_GROUP   "app"
-#define KRYPT_CONF_TRAY_GROUP   "tray"
+#define KRYPT_HAL_DEV_EVENT_NEW       0
+#define KRYPT_HAL_DEV_EVENT_REMOVED   1
+#define KRYPT_HAL_DEV_EVENT_MAPPED    2
+#define KRYPT_HAL_DEV_EVENT_UNMAPPED  3
+#define KRYPT_HAL_DEV_EVENT_MOUNTED   4
+#define KRYPT_HAL_DEV_EVENT_UMOUNTED  5
 
-#define KRYPT_CONF_DEVICE_DESC_GROUP  "device_desc"
-#define KRYPT_CONF_DEVICES_GROUP  "devices"
+#define KRYPT_CONF_GLOBAL_GROUP  "global"
 
-#define KRYPT_CONF_APP_SHOW_POPUP  "show_pass_popup"
+#define KRYPT_CONF_GROUP_BY_CAT  "category_group"
+#define KRYPT_CONF_FLAT_MENU     "flat_menu"
 
-#define KRYPT_CONF_TRAY_SHOW_UMOUNT  "show_umount"
-#define KRYPT_CONF_TRAY_SHOW_MOUNT  "show_mount"
-#define KRYPT_CONF_TRAY_SHOW_ENCRYPT  "show_encrypt"
-#define KRYPT_CONF_TRAY_SHOW_DECRYPT  "show_decrypt"
+#define KRYPT_CONF_SHOW_POPUP    "show_popup"
 
-#define KRYPT_CONF_TRAY_AUTO_ENCRYPT  "auto_encrypt"
+#define KRYPT_CONF_SHOW_UMOUNT   "show_umount"
+#define KRYPT_CONF_SHOW_MOUNT    "show_mount"
+#define KRYPT_CONF_SHOW_ENCRYPT  "show_encrypt"
+#define KRYPT_CONF_SHOW_DECRYPT  "show_decrypt"
+#define KRYPT_CONF_SHOW_OPTIONS  "show_options"
 
-#define KRYPT_CONF_DEVICES_KNOWN  "known"
-#define KRYPT_CONF_DEVICES_IGNORED  "ignore"
+#define KRYPT_CONF_AUTO_ENCRYPT  "auto_encrypt"
+#define KRYPT_CONF_AUTO_DECRYPT  "auto_decrypt"
 
-#endif // _KRYPT_GLOBAL_H_
+#define KRYPT_CONF_OPT_ON        "on"
+#define KRYPT_CONF_OPT_OFF       "off"
+#define KRYPT_CONF_OPT_DEFAULT   "default"
+
+
+#endif // _KRYPT_H_

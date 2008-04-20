@@ -44,6 +44,8 @@ KryptDevice::KryptDevice ( KryptApp *kryptApp, const QString & udi ) :
   _isMounted = false;
   _isIgnored = false;
 
+  _encryptOnUmount = false;
+
   slotLoadConfig();
 }
 
@@ -244,6 +246,7 @@ void KryptDevice::slotHALEvent ( int eventID, const QString& udi )
 
   bool removePass = false;
 
+  bool doEncrypt = false;
   bool newDev = false;
 
   switch ( eventID )
@@ -283,12 +286,21 @@ void KryptDevice::slotHALEvent ( int eventID, const QString& udi )
       _isDecrypted = true;
       _isMounted = false;
       removePass = true;
+
+      if ( _encryptOnUmount || autoEncrypt() )
+      {
+        doEncrypt = true;
+      }
+
       break;
 
     default:
       kdDebug() << "Unknown HAL Device EventID: '" << eventID << "'\n";
+
       break;
   }
+
+  _encryptOnUmount = false;
 
   if ( removePass && _passDialog != 0 )
   {
@@ -299,6 +311,12 @@ void KryptDevice::slotHALEvent ( int eventID, const QString& udi )
   if ( newDev )
   {
     checkNewDevice();
+  }
+
+  if ( doEncrypt )
+  {
+    _encryptOnUmount = false;
+    slotClickEncrypt();
   }
 }
 
@@ -423,21 +441,33 @@ void KryptDevice::slotLoadConfig()
 
 void KryptDevice::slotClickMount()
 {
+  _encryptOnUmount = false;
   _halBackend->slotMountDevice ( _udi );
 }
 
 void KryptDevice::slotClickUMount()
 {
+  _encryptOnUmount = false;
   _halBackend->slotUmountDevice ( _udi );
 }
 
 void KryptDevice::slotClickEncrypt()
 {
-  _halBackend->slotRemoveDevice ( _udi );
+  if ( !_isMounted )
+  {
+    _encryptOnUmount = false;
+    _halBackend->slotRemoveDevice ( _udi );
+  }
+  else
+  {
+    _encryptOnUmount = true;
+    slotClickUMount();
+  }
 }
 
 void KryptDevice::slotClickDecrypt()
 {
+  _encryptOnUmount = false;
   popupPassDialog();
 }
 

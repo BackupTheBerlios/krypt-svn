@@ -105,6 +105,8 @@ private:
   bool _isMounted;
   bool _isIgnored;
 
+  bool _encryptOnUmount;
+
   bool _globShowMount;
   bool _globShowUMount;
   bool _globShowEncrypt;

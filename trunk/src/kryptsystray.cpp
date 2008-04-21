@@ -29,7 +29,6 @@
 #include <kpopupmenu.h>
 
 #include "kryptglobal.h"
-#include "kryptconf.h"
 #include "kryptapp.h"
 #include "kryptsystray.h"
 #include "kryptsystray.moc"
@@ -37,7 +36,6 @@
 KryptSystemTray::KryptSystemTray ( KryptApp *kryptApp, QWidget* parent, const char *name )
     : KSystemTray ( parent, name ), _kryptApp ( kryptApp )
 {
-  _confDlg = 0;
   _cfg = kryptApp->getConfig();
 
   _groupByCategory = false;
@@ -60,7 +58,7 @@ KryptSystemTray::KryptSystemTray ( KryptApp *kryptApp, QWidget* parent, const ch
   /* once the help menu is gone, remove the separator which is at position KHelpMenu::menuHelpContents now */
   _helpMenu->menu ()->removeItemAt ( KHelpMenu::menuHelpContents );
 
-  loadConfig();
+  slotLoadConfig();
 
   setPixmap ( KSystemTray::loadIcon ( "krypt" ) );
   setAlignment ( Qt::AlignHCenter | Qt::AlignVCenter );
@@ -164,7 +162,7 @@ int KryptSystemTray::createCategoryEntries ( KPopupMenu* menu, const QValueList<
           added = true;
         }
 
-        lastIndex = menu->insertItem ( dev->getIcon(), dev->getDesc(), dev, SLOT ( slotClickUMount() ) );
+        lastIndex = menu->insertItem ( dev->getIcon ( KIcon::SizeSmall ), dev->getDesc(), dev, SLOT ( slotClickUMount() ) );
       }
 
       else
@@ -176,7 +174,7 @@ int KryptSystemTray::createCategoryEntries ( KPopupMenu* menu, const QValueList<
           added = true;
         }
 
-        _umountMenu->insertItem ( dev->getIcon(), dev->getDesc(), dev, SLOT ( slotClickUMount() ) );
+        _umountMenu->insertItem ( dev->getIcon ( KIcon::SizeSmall ), dev->getDesc(), dev, SLOT ( slotClickUMount() ) );
       }
     }
   }
@@ -199,7 +197,7 @@ int KryptSystemTray::createCategoryEntries ( KPopupMenu* menu, const QValueList<
           added = true;
         }
 
-        lastIndex = menu->insertItem ( dev->getIcon(), dev->getDesc(), dev, SLOT ( slotClickMount() ) );
+        lastIndex = menu->insertItem ( dev->getIcon ( KIcon::SizeSmall ), dev->getDesc(), dev, SLOT ( slotClickMount() ) );
       }
 
       else
@@ -211,7 +209,7 @@ int KryptSystemTray::createCategoryEntries ( KPopupMenu* menu, const QValueList<
           added = true;
         }
 
-        _mountMenu->insertItem ( dev->getIcon(), dev->getDesc(), dev, SLOT ( slotClickMount() ) );
+        _mountMenu->insertItem ( dev->getIcon ( KIcon::SizeSmall ), dev->getDesc(), dev, SLOT ( slotClickMount() ) );
       }
     }
   }
@@ -234,7 +232,7 @@ int KryptSystemTray::createCategoryEntries ( KPopupMenu* menu, const QValueList<
           added = true;
         }
 
-        lastIndex = menu->insertItem ( dev->getIcon(), dev->getDesc(), dev, SLOT ( slotClickEncrypt() ) );
+        lastIndex = menu->insertItem ( dev->getIcon ( KIcon::SizeSmall ), dev->getDesc(), dev, SLOT ( slotClickEncrypt() ) );
       }
 
       else
@@ -246,7 +244,7 @@ int KryptSystemTray::createCategoryEntries ( KPopupMenu* menu, const QValueList<
           added = true;
         }
 
-        _encryptMenu->insertItem ( dev->getIcon(), dev->getDesc(), dev, SLOT ( slotClickEncrypt() ) );
+        _encryptMenu->insertItem ( dev->getIcon ( KIcon::SizeSmall ), dev->getDesc(), dev, SLOT ( slotClickEncrypt() ) );
       }
     }
   }
@@ -269,7 +267,7 @@ int KryptSystemTray::createCategoryEntries ( KPopupMenu* menu, const QValueList<
           added = true;
         }
 
-        lastIndex = menu->insertItem ( dev->getIcon(), dev->getDesc(), dev, SLOT ( slotClickDecrypt() ) );
+        lastIndex = menu->insertItem ( dev->getIcon ( KIcon::SizeSmall ), dev->getDesc(), dev, SLOT ( slotClickDecrypt() ) );
       }
 
       else
@@ -281,7 +279,7 @@ int KryptSystemTray::createCategoryEntries ( KPopupMenu* menu, const QValueList<
           added = true;
         }
 
-        _decryptMenu->insertItem ( dev->getIcon(), dev->getDesc(), dev, SLOT ( slotClickDecrypt() ) );
+        _decryptMenu->insertItem ( dev->getIcon ( KIcon::SizeSmall ), dev->getDesc(), dev, SLOT ( slotClickDecrypt() ) );
       }
     }
   }
@@ -306,7 +304,7 @@ int KryptSystemTray::createCategoryEntries ( KPopupMenu* menu, const QValueList<
             added = true;
           }
 
-          lastIndex = menu->insertItem ( dev->getIcon(), dev->getDesc(), dev, SLOT ( slotClickOptions() ) );
+          lastIndex = menu->insertItem ( dev->getIcon ( KIcon::SizeSmall ), dev->getDesc(), dev, SLOT ( slotClickOptions() ) );
         }
 
         else
@@ -318,7 +316,7 @@ int KryptSystemTray::createCategoryEntries ( KPopupMenu* menu, const QValueList<
             added = true;
           }
 
-          _optionMenu->insertItem ( dev->getIcon(), dev->getDesc(), dev, SLOT ( slotClickOptions() ) );
+          _optionMenu->insertItem ( dev->getIcon ( KIcon::SizeSmall ), dev->getDesc(), dev, SLOT ( slotClickOptions() ) );
         }
       }
     }
@@ -359,7 +357,7 @@ int KryptSystemTray::createDevEntries ( KPopupMenu* menu, const QValueList<Krypt
       {
         if ( !added )
         {
-          lastIndex = menu->insertTitle ( dev->getIcon(), dev->getDesc() );
+          lastIndex = menu->insertTitle ( dev->getIcon ( KIcon::SizeSmall ), dev->getDesc() );
           added = true;
         }
 
@@ -372,7 +370,7 @@ int KryptSystemTray::createDevEntries ( KPopupMenu* menu, const QValueList<Krypt
         if ( !added )
         {
           devMenu->clear();
-          lastIndex = menu->insertItem ( dev->getIcon(), dev->getDesc(), devMenu, -1 );
+          lastIndex = menu->insertItem ( dev->getIcon ( KIcon::SizeSmall ), dev->getDesc(), devMenu, -1 );
           added = true;
         }
 
@@ -387,7 +385,7 @@ int KryptSystemTray::createDevEntries ( KPopupMenu* menu, const QValueList<Krypt
       {
         if ( !added )
         {
-          lastIndex = menu->insertTitle ( dev->getIcon(), dev->getDesc() );
+          lastIndex = menu->insertTitle ( dev->getIcon ( KIcon::SizeSmall ), dev->getDesc() );
           added = true;
         }
 
@@ -400,7 +398,7 @@ int KryptSystemTray::createDevEntries ( KPopupMenu* menu, const QValueList<Krypt
         if ( !added )
         {
           devMenu->clear();
-          lastIndex = menu->insertItem ( dev->getIcon(), dev->getDesc(), devMenu, -1 );
+          lastIndex = menu->insertItem ( dev->getIcon ( KIcon::SizeSmall ), dev->getDesc(), devMenu, -1 );
           added = true;
         }
 
@@ -415,7 +413,7 @@ int KryptSystemTray::createDevEntries ( KPopupMenu* menu, const QValueList<Krypt
       {
         if ( !added )
         {
-          lastIndex = menu->insertTitle ( dev->getIcon(), dev->getDesc() );
+          lastIndex = menu->insertTitle ( dev->getIcon ( KIcon::SizeSmall ), dev->getDesc() );
           added = true;
         }
 
@@ -428,7 +426,7 @@ int KryptSystemTray::createDevEntries ( KPopupMenu* menu, const QValueList<Krypt
         if ( !added )
         {
           devMenu->clear();
-          lastIndex = menu->insertItem ( dev->getIcon(), dev->getDesc(), devMenu, -1 );
+          lastIndex = menu->insertItem ( dev->getIcon ( KIcon::SizeSmall ), dev->getDesc(), devMenu, -1 );
           added = true;
         }
 
@@ -443,7 +441,7 @@ int KryptSystemTray::createDevEntries ( KPopupMenu* menu, const QValueList<Krypt
       {
         if ( !added )
         {
-          lastIndex = menu->insertTitle ( dev->getIcon(), dev->getDesc() );
+          lastIndex = menu->insertTitle ( dev->getIcon ( KIcon::SizeSmall ), dev->getDesc() );
           added = true;
         }
 
@@ -456,7 +454,7 @@ int KryptSystemTray::createDevEntries ( KPopupMenu* menu, const QValueList<Krypt
         if ( !added )
         {
           devMenu->clear();
-          lastIndex = menu->insertItem ( dev->getIcon(), dev->getDesc(), devMenu, -1 );
+          lastIndex = menu->insertItem ( dev->getIcon ( KIcon::SizeSmall ), dev->getDesc(), devMenu, -1 );
           added = true;
         }
 
@@ -465,13 +463,13 @@ int KryptSystemTray::createDevEntries ( KPopupMenu* menu, const QValueList<Krypt
     }
 
     // OPTIONS
-    if ( full && dev->showEncrypt() )
+    if ( full && dev->showOptions() )
     {
       if ( _flatMenu )
       {
         if ( !added )
         {
-          lastIndex = menu->insertTitle ( dev->getIcon(), dev->getDesc() );
+          lastIndex = menu->insertTitle ( dev->getIcon ( KIcon::SizeSmall ), dev->getDesc() );
           added = true;
         }
 
@@ -484,7 +482,7 @@ int KryptSystemTray::createDevEntries ( KPopupMenu* menu, const QValueList<Krypt
         if ( !added )
         {
           devMenu->clear();
-          lastIndex = menu->insertItem ( dev->getIcon(), dev->getDesc(), devMenu, -1 );
+          lastIndex = menu->insertItem ( dev->getIcon ( KIcon::SizeSmall ), dev->getDesc(), devMenu, -1 );
           added = true;
         }
 
@@ -520,7 +518,7 @@ void KryptSystemTray::recreateMenu ( KPopupMenu* menu, bool full )
 
   if ( !lastIndex )
   {
-    lastIndex = menu->insertItem ( i18n ( "No LUKS volumes to display" ) );
+    lastIndex = menu->insertItem ( i18n ( "Nothing to display..." ) );
     menu->setItemEnabled ( lastIndex, false );
   }
 
@@ -529,7 +527,7 @@ void KryptSystemTray::recreateMenu ( KPopupMenu* menu, bool full )
     menu->insertSeparator();
 
     KAction *actPrefs = new KAction ( i18n ( "Configure Krypt..." ),
-                                      SmallIconSet ( "configure" ), KShortcut(), this, SLOT ( slotPrefs() ),
+                                      SmallIconSet ( "configure" ), KShortcut(), this, SIGNAL ( signalClickConfig() ),
                                       actionCollection() );
     actPrefs->plug ( menu );
 
@@ -547,39 +545,10 @@ void KryptSystemTray::contextMenuAboutToShow ( KPopupMenu* menu )
   recreateMenu ( menu, true );
 }
 
-void KryptSystemTray::slotConfigChanged()
-{
-  loadConfig();
-
-  emit sigConfigChanged();
-
-  if ( _confDlg )
-  {
-    _confDlg->deleteLater();
-    _confDlg = 0;
-  }
-}
-
-void KryptSystemTray::loadConfig()
+void KryptSystemTray::slotLoadConfig()
 {
   _cfg->setGroup ( KRYPT_CONF_GLOBAL_GROUP );
 
   _groupByCategory = _cfg->readBoolEntry ( KRYPT_CONF_GROUP_BY_CAT, false );
   _flatMenu = _cfg->readBoolEntry ( KRYPT_CONF_FLAT_MENU, false );
-}
-
-void KryptSystemTray::slotPrefs()
-{
-  if ( _confDlg )
-  {
-    delete _confDlg;
-    _confDlg = 0;
-  }
-
-  _confDlg = new KryptConf ( _cfg );
-
-  connect ( _confDlg, SIGNAL ( sigConfChanged() ),
-            this, SLOT ( slotConfigChanged() ) );
-
-  _confDlg->show();
 }

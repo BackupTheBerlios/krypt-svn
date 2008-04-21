@@ -21,15 +21,16 @@
 #include <string.h>
 #include <qcheckbox.h>
 #include <kactionselector.h>
+#include <qradiobutton.h>
 
 #include "kryptdevitem.h"
 #include "kryptglobal.h"
 #include "kryptconf.h"
 #include "kryptconf.moc"
 
-KryptConf::KryptConf ( KConfig *cfg ) :
+KryptConf::KryptConf ( KConfig *cfg, QValueList<KryptDevice*> devices ) :
     KDialogBase ( 0, "Conf", true, "Configure Krypt", Ok | Cancel, Ok, false )
-    , _dlg ( 0 ), _cfg ( cfg )
+    , _dlg ( 0 ), _cfg ( cfg ), _devices ( devices ), _isLeaving ( false )
 {
   _dlg = new ConfDialog ( this );
 
@@ -41,37 +42,51 @@ KryptConf::KryptConf ( KConfig *cfg ) :
 
   setMainWidget ( _dlg );
 
-//   _cfg->setGroup ( KRYPT_CONF_APP_GROUP );
-//   _dlg->cPopUp->setChecked ( _cfg->readBoolEntry ( KRYPT_CONF_APP_SHOW_POPUP, true ) );
-//
-//   _cfg->setGroup ( KRYPT_CONF_TRAY_GROUP );
-//   _dlg->cUmount->setChecked ( _cfg->readBoolEntry ( KRYPT_CONF_TRAY_SHOW_UMOUNT, true ) );
-//   _dlg->cMount->setChecked ( _cfg->readBoolEntry ( KRYPT_CONF_TRAY_SHOW_MOUNT, true ) );
-//   _dlg->cEncrypt->setChecked ( _cfg->readBoolEntry ( KRYPT_CONF_TRAY_SHOW_ENCRYPT, true ) );
-//   _dlg->cDecrypt->setChecked ( _cfg->readBoolEntry ( KRYPT_CONF_TRAY_SHOW_DECRYPT, true ) );
-//   _dlg->cAutoEncrypt->setChecked ( _cfg->readBoolEntry ( KRYPT_CONF_TRAY_AUTO_ENCRYPT, true ) );
-//
-//   _cfg->setGroup ( KRYPT_CONF_DEVICES_GROUP );
+  _cfg->setGroup ( KRYPT_CONF_GLOBAL_GROUP );
 
-//   QStringList known = _cfg->readListEntry ( KRYPT_CONF_DEVICES_KNOWN );
-//   QStringList ignored = _cfg->readListEntry ( KRYPT_CONF_DEVICES_IGNORED );
-//
-//   _cfg->setGroup ( KRYPT_CONF_DEVICE_DESC_GROUP );
-//
-//   QListBox *list = _dlg->selIgnored->selectedListBox();
-//
-//   for ( QStringList::Iterator it = ignored.begin(); it != ignored.end(); ++it )
-//   {
-//     known.remove ( *it );
-//     new KryptDevItem ( *it, list, _cfg->readEntry ( *it, "unknown" ) );
-//   }
-//
-//   list = _dlg->selIgnored->availableListBox();
-//
-//   for ( QStringList::Iterator it = known.begin(); it != known.end(); ++it )
-//   {
-//     new KryptDevItem ( *it, list, _cfg->readEntry ( *it, "unknown" ) );
-//   }
+  _dlg->cMount->setChecked ( _cfg->readBoolEntry ( KRYPT_CONF_SHOW_MOUNT, true ) );
+  _dlg->cUmount->setChecked ( _cfg->readBoolEntry ( KRYPT_CONF_SHOW_UMOUNT, true ) );
+  _dlg->cEncrypt->setChecked ( _cfg->readBoolEntry ( KRYPT_CONF_SHOW_ENCRYPT, true ) );
+  _dlg->cDecrypt->setChecked ( _cfg->readBoolEntry ( KRYPT_CONF_SHOW_DECRYPT, true ) );
+  _dlg->cOptions->setChecked ( _cfg->readBoolEntry ( KRYPT_CONF_SHOW_OPTIONS, true ) );
+
+  _dlg->cAutoEncrypt->setChecked ( _cfg->readBoolEntry ( KRYPT_CONF_AUTO_ENCRYPT, true ) );
+  _dlg->cAutoDecrypt->setChecked ( _cfg->readBoolEntry ( KRYPT_CONF_AUTO_DECRYPT, false ) );
+
+  _dlg->cPopUp->setChecked ( _cfg->readBoolEntry ( KRYPT_CONF_SHOW_POPUP, true ) );
+
+  if ( _cfg->readBoolEntry ( KRYPT_CONF_GROUP_BY_CAT, false ) )
+  {
+    _dlg->rGroupActions->setChecked ( true );
+  }
+  else
+  {
+    _dlg->rGroupDevices->setChecked ( true );
+  }
+
+  if ( _cfg->readBoolEntry ( KRYPT_CONF_FLAT_MENU, false ) )
+  {
+    _dlg->rFlat->setChecked ( true );
+  }
+  else
+  {
+    _dlg->rDropDown->setChecked ( true );
+  }
+
+  slotRegenerateDeviceList();
+
+  QValueList<KryptDevice*>::const_iterator it = _devices.begin();
+  QValueList<KryptDevice*>::const_iterator itEnd = _devices.end();
+
+  for ( ; it != itEnd; ++it )
+  {
+    connect ( ( *it ), SIGNAL ( signalConfigChanged() ),
+              this, SLOT ( slotRegenerateDeviceList() ) );
+  }
+
+  connect ( _dlg->listKnown, SIGNAL ( doubleClicked ( QListViewItem *, const QPoint &, int ) ),
+
+            this, SLOT ( slotDoubleClicked ( QListViewItem *, const QPoint &, int ) ) );
 }
 
 KryptConf::~KryptConf()
@@ -79,45 +94,82 @@ KryptConf::~KryptConf()
   delete _dlg;
 }
 
+void KryptConf::slotRegenerateDeviceList()
+{
+  if ( _isLeaving ) return;
+
+  _dlg->listKnown->clear();
+
+  QValueList<KryptDevice*>::const_iterator it = _devices.begin();
+
+  QValueList<KryptDevice*>::const_iterator itEnd = _devices.end();
+
+  for ( ; it != itEnd; ++it )
+  {
+    new KryptDevItem ( _dlg->listKnown, ( *it ) );
+  }
+}
+
+void KryptConf::slotDoubleClicked ( QListViewItem *item, const QPoint &, int col )
+{
+  if ( col < 0 ) return;
+
+  KryptDevItem *kItem = ( KryptDevItem* ) item;
+
+  if ( col == KRYPT_DEV_ITEM_COL_IGNORED )
+  {
+    kItem->toggleIgnored();
+  }
+  else if ( col == KRYPT_DEV_ITEM_COL_NAME || col == KRYPT_DEV_ITEM_COL_BLOCK_DEV )
+  {
+    kItem->getKryptDevice()->slotClickOptions();
+  }
+}
+
 void KryptConf::slotOk()
 {
-//   _cfg->setGroup ( KRYPT_CONF_APP_GROUP );
-//   _cfg->writeEntry ( KRYPT_CONF_APP_SHOW_POPUP, _dlg->cPopUp->isChecked() );
-//
-//   _cfg->setGroup ( KRYPT_CONF_TRAY_GROUP );
-//   _cfg->writeEntry ( KRYPT_CONF_TRAY_SHOW_UMOUNT, _dlg->cUmount->isChecked() );
-//   _cfg->writeEntry ( KRYPT_CONF_TRAY_SHOW_MOUNT, _dlg->cMount->isChecked() );
-//   _cfg->writeEntry ( KRYPT_CONF_TRAY_SHOW_ENCRYPT, _dlg->cEncrypt->isChecked() );
-//   _cfg->writeEntry ( KRYPT_CONF_TRAY_SHOW_DECRYPT, _dlg->cDecrypt->isChecked() );
-//   _cfg->writeEntry ( KRYPT_CONF_TRAY_AUTO_ENCRYPT, _dlg->cAutoEncrypt->isChecked() );
+  _cfg->setGroup ( KRYPT_CONF_GLOBAL_GROUP );
 
-  QStringList ignored;
+  _cfg->writeEntry ( KRYPT_CONF_SHOW_MOUNT, _dlg->cMount->isChecked() );
+  _cfg->writeEntry ( KRYPT_CONF_SHOW_UMOUNT, _dlg->cUmount->isChecked() );
+  _cfg->writeEntry ( KRYPT_CONF_SHOW_ENCRYPT, _dlg->cEncrypt->isChecked() );
+  _cfg->writeEntry ( KRYPT_CONF_SHOW_DECRYPT, _dlg->cDecrypt->isChecked() );
+  _cfg->writeEntry ( KRYPT_CONF_SHOW_OPTIONS, _dlg->cOptions->isChecked() );
 
-  QListBox *list = _dlg->selIgnored->selectedListBox();
-  uint count = list->count();
+  _cfg->writeEntry ( KRYPT_CONF_AUTO_ENCRYPT, _dlg->cAutoEncrypt->isChecked() );
+  _cfg->writeEntry ( KRYPT_CONF_AUTO_DECRYPT, _dlg->cAutoDecrypt->isChecked() );
+  _cfg->writeEntry ( KRYPT_CONF_SHOW_POPUP, _dlg->cPopUp->isChecked() );
 
-  for ( uint i = 0; i < count; ++i )
+  _cfg->writeEntry ( KRYPT_CONF_GROUP_BY_CAT, _dlg->rGroupActions->isChecked() );
+  _cfg->writeEntry ( KRYPT_CONF_FLAT_MENU, _dlg->rFlat->isChecked() );
+
+  // So we don't update item list in slotRegenerateDeviceList
+  _isLeaving = true;
+
+  QListViewItem * item = _dlg->listKnown->firstChild();
+
+  while ( item != 0 )
   {
-    QListBoxItem *item = list->item ( i );
+    KryptDevItem *kItem = ( KryptDevItem* ) item;
+    KryptDevice *kDev = kItem->getKryptDevice();
 
-    if ( item )
-    {
-      ignored.append ( ( ( KryptDevItem* ) item )->udi );
-    }
+    kDev->setIgnored ( kItem->isIgnored() );
+    kDev->slotSaveConfig();
+
+    item = item->nextSibling();
   }
-
-//   _cfg->setGroup ( KRYPT_CONF_DEVICES_GROUP );
-//
-//   _cfg->writeEntry ( KRYPT_CONF_DEVICES_IGNORED, ignored );
-
-  _cfg->sync();
 
   hide();
 
-  emit sigConfChanged();
+  emit signalConfigChanged();
+
+  _cfg->sync();
+
+  emit signalClosed();
 }
 
 void KryptConf::slotCancel()
 {
   hide();
+  emit signalClosed();
 }

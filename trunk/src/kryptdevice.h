@@ -21,6 +21,7 @@
 #ifndef _KRYPT_DEVICE_H_
 #define _KRYPT_DEVICE_H_
 
+#include <kicontheme.h>
 #include <qobject.h>
 #include <qstring.h>
 
@@ -32,6 +33,8 @@ class KConfig;
 
 class KryptDialog;
 
+class KryptDevConf;
+
 class QPixmap;
 
 class KryptDevice : public QObject
@@ -39,17 +42,23 @@ class KryptDevice : public QObject
   Q_OBJECT
 
 public:
+  enum OptionType { OptionOff, OptionOn, OptionDefault };
+
   KryptDevice ( KryptApp *kryptApp, const QString & udi );
   ~KryptDevice();
 
   int getID() const;
   const QString & getUDI() const;
-  QString getDesc ( ) const;
+  QString getDesc () const;
+  QString getName () const;
   const QString & getType() const;
   const QString & getProduct() const;
   const QString & getVendor() const;
   const QString & getBlockDev() const;
-  QPixmap getIcon () const;
+  QPixmap getIcon ( KIcon::StdSizes size = KIcon::SizeLarge ) const;
+  QString getConfigGroup() const;
+
+  static QString getConfigGroup ( const QString & forUdi );
 
   bool isDecrypted() const;
   bool isMounted() const;
@@ -66,7 +75,28 @@ public:
   bool autoDecrypt() const;
   bool showPopup() const;
 
-  void passDialogCanceled();
+  OptionType getOptShowMount() const;
+  OptionType getOptShowUMount() const;
+  OptionType getOptShowDecrypt() const;
+  OptionType getOptShowEncrypt() const;
+  OptionType getOptShowOptions() const;
+  OptionType getOptShowPopup() const;
+  OptionType getOptAutoDecrypt() const;
+  OptionType getOptAutoEncrypt() const;
+
+  void setOptShowMount ( OptionType nOpt );
+  void setOptShowUMount ( OptionType nOpt );
+  void setOptShowDecrypt ( OptionType nOpt );
+  void setOptShowEncrypt ( OptionType nOpt );
+  void setOptShowOptions ( OptionType nOpt );
+  void setOptShowPopup ( OptionType nOpt );
+  void setOptAutoDecrypt ( OptionType nOpt );
+  void setOptAutoEncrypt ( OptionType nOpt );
+
+  void setIgnored ( bool newIgnored );
+
+signals:
+  void signalConfigChanged();
 
 public slots:
   void slotHALEvent ( int eventID, const QString& udi );
@@ -82,9 +112,11 @@ public slots:
 
   void slotPassDecrypt ( const QString &password );
 
-private:
-  enum OptionType { OptionOff, OptionOn, OptionDefault };
+protected slots:
+  void slotClosedPassDialog();
+  void slotClosedConfDialog();
 
+private:
   static int _lastDevID;
   KryptApp *_kryptApp;
   QString _udi;
@@ -93,6 +125,7 @@ private:
   HALBackend *_halBackend;
   KConfig *_cfg;
   KryptDialog *_passDialog;
+  KryptDevConf *_confDialog;
 
   QString _vendor;
   QString _product;

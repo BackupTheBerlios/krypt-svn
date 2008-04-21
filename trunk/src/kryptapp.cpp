@@ -29,9 +29,14 @@
 #include "halbackend.h"
 #include "kryptsystray.h"
 #include "kryptdialog.h"
+#include "kryptconf.h"
 
 KryptApp::KryptApp() : _cfg ( "kryptrc" )
 {
+  checkConfig();
+
+  _confDlg = 0;
+
   _tray = new KryptSystemTray ( this, 0L, "KryptSysTray" );
 
   _tray->show();
@@ -52,6 +57,12 @@ KryptApp::KryptApp() : _cfg ( "kryptrc" )
   connect ( halBackend, SIGNAL ( sigPassError ( const QString&, const QString&, const QString& ) ),
             this, SLOT ( slotPassError ( const QString&, const QString&, const QString& ) ) );
 
+  connect ( _tray, SIGNAL ( signalClickConfig() ),
+            this, SLOT ( slotShowConfig() ) );
+
+  connect ( this, SIGNAL ( signalConfigChanged() ),
+            _tray, SLOT ( slotLoadConfig() ) );
+
   halBackend->initScan();
 }
 
@@ -67,6 +78,14 @@ KryptApp::~KryptApp()
   _udi2Dev.clear();
 
   _id2Dev.clear();
+
+  // TODO - Needed? Probably Qt does that anyway...
+
+  if ( _confDlg != 0 )
+  {
+    delete _confDlg;
+    _confDlg = 0;
+  }
 }
 
 QString KryptApp::getHalDevEventDesc ( int eventID ) const
@@ -165,11 +184,16 @@ KryptDevice * KryptApp::getDevice ( const QString &udi, bool create )
 
     _id2Dev.insert ( nDev->getID(), nDev );
 
-    connect ( _tray, SIGNAL ( sigConfigChanged() ),
+    connect ( this, SIGNAL ( signalConfigChanged() ),
               nDev, SLOT ( slotLoadConfig() ) );
   }
 
-  return _udi2Dev[udi];
+  if ( _udi2Dev.contains ( udi ) )
+  {
+    return _udi2Dev[udi];
+  }
+
+  return 0;
 }
 
 KryptDevice * KryptApp::getDevice ( int id )
@@ -190,4 +214,75 @@ KConfig * KryptApp::getConfig()
 QValueList<KryptDevice*> KryptApp::getDevices() const
 {
   return _udi2Dev.values();
+}
+
+void KryptApp::slotShowConfig()
+{
+  if ( _confDlg )
+  {
+    delete _confDlg;
+    _confDlg = 0;
+  }
+
+  createAllKnownDevices();
+
+  _confDlg = new KryptConf ( &_cfg, getDevices() );
+
+  connect ( _confDlg, SIGNAL ( signalConfigChanged() ),
+            this, SLOT ( slotConfigChanged() ) );
+
+  _confDlg->show();
+
+}
+
+void KryptApp::createAllKnownDevices()
+{
+  QStringList groups = _cfg.groupList();
+  QStringList::Iterator it = groups.begin();
+  QStringList::Iterator itEnd = groups.end();
+  int prefLen = strlen ( KRYPT_CONF_UDI_PREFIX );
+
+  for ( ; it != itEnd; ++it )
+  {
+    QString vol = *it;
+    int volLen = vol.length();
+
+    if ( volLen > prefLen && vol.startsWith ( KRYPT_CONF_UDI_PREFIX ) )
+    {
+      QString udi = vol.right ( volLen - prefLen );
+
+      if ( !_udi2Dev.contains ( udi ) ) getDevice ( udi, true );
+    }
+  }
+}
+
+void KryptApp::slotConfigChanged()
+{
+  if ( _confDlg )
+  {
+    _confDlg->deleteLater();
+    _confDlg = 0;
+  }
+
+  emit signalConfigChanged();
+}
+
+void KryptApp::checkConfig()
+{
+  _cfg.setGroup ( KRYPT_CONF_GLOBAL_GROUP );
+
+  QString confVer = _cfg.readEntry ( KRYPT_CONF_VERSION, "0" );
+
+  if ( confVer == "0" )
+  {
+    // Remove options from older version. Sorry ;)
+    _cfg.deleteGroup ( "app" );
+    _cfg.deleteGroup ( "device_desc" );
+    _cfg.deleteGroup ( "tray" );
+    _cfg.deleteGroup ( "devices" );
+  }
+
+  _cfg.writeEntry ( KRYPT_CONF_VERSION, KRYPT_VERSION_STRING );
+
+  _cfg.sync();
 }

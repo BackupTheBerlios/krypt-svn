@@ -28,10 +28,12 @@
 #define KRYPT_HAL_DEV_EVENT_MOUNTED   4
 #define KRYPT_HAL_DEV_EVENT_UMOUNTED  5
 
-#define KRYPT_CONF_GLOBAL_GROUP  "global"
+#define KRYPT_CONF_UDI_PREFIX    "krypt_volume_"
+#define KRYPT_CONF_GLOBAL_GROUP  "krypt_global"
 
 #define KRYPT_CONF_GROUP_BY_CAT  "category_group"
 #define KRYPT_CONF_FLAT_MENU     "flat_menu"
+#define KRYPT_CONF_VERSION       "config_version"
 
 #define KRYPT_CONF_SHOW_POPUP    "show_popup"
 

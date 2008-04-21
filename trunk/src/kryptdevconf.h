@@ -18,33 +18,39 @@
  *   51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.           *
  ***************************************************************************/
 
-#ifndef _KRYPT_DEV_ITEM_H_
-#define _KRYPT_DEV_ITEM_H_
+#ifndef _KRYPT_DEV_CONF_H_
+#define _KRYPT_DEV_CONF_H_
 
-#define KRYPT_DEV_ITEM_COL_NAME       0
-#define KRYPT_DEV_ITEM_COL_BLOCK_DEV  1
-#define KRYPT_DEV_ITEM_COL_IGNORED    2
+#include <kdialogbase.h>
 
-#include <qlistview.h>
+#include "devconfdialog.h"
+#include "kryptdevice.h"
 
-class KryptDevice;
+class QRadioButton;
 
-class KryptDevItem : public QListViewItem
+class KryptDevConf : public KDialogBase
 {
+  Q_OBJECT
 
 public:
-  KryptDevItem ( QListView * parent, KryptDevice *kryptDev );
-  virtual ~KryptDevItem();
+  KryptDevConf ( KryptDevice *kDev );
+  ~KryptDevConf();
 
-  bool isIgnored();
-  void toggleIgnored();
-  KryptDevice *getKryptDevice();
+signals:
+  void signalClosed();
+  void signalConfigChanged();
+
+protected slots:
+  void slotCancel();
+  void slotOk();
+  void slotDefault();
 
 private:
   KryptDevice *_kryptDev;
-  bool _ignored;
+  DevConfDialog* _dlg;
 
-  void doSetup();
+  void setButtonGroup ( KryptDevice::OptionType oVal, QRadioButton *on, QRadioButton *off, QRadioButton *def );
+  KryptDevice::OptionType getGroupVal ( QRadioButton *on, QRadioButton *off, QRadioButton *def ) const;
 };
 
-#endif // _KRYPT_DEV_ITEM_H_
+#endif // _KRYPT_DEV_CONF_H_

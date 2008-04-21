@@ -27,8 +27,6 @@
 
 #include "kryptdevice.h"
 
-class KryptConf;
-
 class KryptApp;
 
 class KPopupMenu;
@@ -46,13 +44,10 @@ public:
   virtual void contextMenuAboutToShow ( KPopupMenu *menu );
 
 signals:
-  void sigConfigChanged();
+  void signalClickConfig();
 
 public slots:
-  void slotConfigChanged();
-
-protected slots:
-  void slotPrefs();
+  void slotLoadConfig();
 
 protected:
   void mousePressEvent ( QMouseEvent *e );
@@ -72,9 +67,6 @@ private:
   bool _groupByCategory;
   bool _flatMenu;
 
-  void loadConfig();
-
-  KryptConf* _confDlg;
   KConfig* _cfg;
 
   void recreateMenu ( KPopupMenu* menu, bool full );

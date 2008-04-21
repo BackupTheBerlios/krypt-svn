@@ -35,6 +35,8 @@ class KryptSystemTray;
 
 class HALBackend;
 
+class KryptConf;
+
 class KryptApp : public KUniqueApplication
 {
   Q_OBJECT
@@ -49,17 +51,26 @@ public:
   KConfig * getConfig();
   QString getHalDevEventDesc ( int eventID ) const;
 
+signals:
+  void signalConfigChanged();
+
 protected slots:
   void slotHALEvent ( int eventID, const QString &udi );
   void slotError ( const QString &udi, const QString &errorName, const QString &errorMsg );
   void slotPassError ( const QString &udi, const QString &errorName, const QString &errorMsg );
   void slotNewInfo ( const QString &info );
+  void slotShowConfig();
+  void slotConfigChanged();
 
 protected:
   KConfig _cfg;
+  KryptConf *_confDlg;
   KryptSystemTray *_tray;
   QMap<QString, KryptDevice*> _udi2Dev;
   QMap<int, KryptDevice*> _id2Dev;
+
+  void createAllKnownDevices();
+  void checkConfig();
 };
 
 #endif // _KRYPT_APP_H_

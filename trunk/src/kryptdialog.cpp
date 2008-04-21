@@ -109,6 +109,5 @@ void KryptDialog::slotDecrypt()
 
 void KryptDialog::slotCancel()
 {
-  _kryptDev->passDialogCanceled();
-  this->deleteLater();
+  emit signalClosed();
 }

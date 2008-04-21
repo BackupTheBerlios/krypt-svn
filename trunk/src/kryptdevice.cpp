@@ -25,6 +25,7 @@
 #include "halbackend.h"
 #include "kryptapp.h"
 #include "kryptdialog.h"
+#include "kryptdevconf.h"
 #include "kryptdevice.h"
 #include "kryptdevice.moc"
 
@@ -37,6 +38,7 @@ KryptDevice::KryptDevice ( KryptApp *kryptApp, const QString & udi ) :
   _halBackend = HALBackend::get();
   _cfg = kryptApp->getConfig();
   _passDialog = 0;
+  _confDialog = 0;
   _cUdi = 0;
 
   _isPresent = false;
@@ -61,6 +63,12 @@ KryptDevice::~KryptDevice()
   {
     delete[] _cUdi;
     _cUdi = 0;
+  }
+
+  if ( _confDialog != 0 )
+  {
+    delete _confDialog;
+    _confDialog = 0;
   }
 }
 
@@ -92,6 +100,11 @@ QString KryptDevice::getDesc( ) const
   return QString ( "%1 %2 (%3)" ).arg ( _vendor ).arg ( _product ).arg ( _blockDev );
 }
 
+QString KryptDevice::getName( ) const
+{
+  return QString ( "%1 %2" ).arg ( _vendor ).arg ( _product );
+}
+
 const QString & KryptDevice::getType() const
 {
   return _type;
@@ -112,7 +125,7 @@ const QString & KryptDevice::getBlockDev() const
   return _blockDev;
 }
 
-QPixmap KryptDevice::getIcon () const
+QPixmap KryptDevice::getIcon ( KIcon::StdSizes size ) const
 {
   QString deviceIcon;
 
@@ -131,7 +144,17 @@ QPixmap KryptDevice::getIcon () const
     deviceIcon = QString ( "hdd_unmount" );
   }
 
-  return KGlobal::iconLoader()->loadIcon ( deviceIcon, KIcon::NoGroup, KIcon::SizeLarge );
+  return KGlobal::iconLoader()->loadIcon ( deviceIcon, KIcon::NoGroup, size );
+}
+
+QString KryptDevice::getConfigGroup ( const QString & forUdi )
+{
+  return QString ( KRYPT_CONF_UDI_PREFIX "%1" ).arg ( forUdi );
+}
+
+QString KryptDevice::getConfigGroup() const
+{
+  return getConfigGroup ( _udi );
 }
 
 bool KryptDevice::isDecrypted() const
@@ -332,6 +355,8 @@ void KryptDevice::slotPassError ( const QString &udi, const QString &errorName, 
   {
     updateDeviceInfo();
   }
+
+  _passDialog->slotPassError ( errorName, errorMsg );
 }
 
 void KryptDevice::updateDeviceInfo()
@@ -349,7 +374,7 @@ void KryptDevice::updateDeviceInfo()
 
 void KryptDevice::slotSaveConfig()
 {
-  _cfg->setGroup ( _udi );
+  _cfg->setGroup ( getConfigGroup() );
 
   _cfg->writeEntry ( "dev_vendor", _vendor );
 
@@ -373,9 +398,11 @@ void KryptDevice::slotSaveConfig()
   saveOption ( KRYPT_CONF_SHOW_POPUP, _showPopup );
 
   _cfg->sync();
+
+  emit signalConfigChanged();
 }
 
-KryptDevice::OptionType KryptDevice::loadOption ( const char *opt )
+KryptDevice::KryptDevice::OptionType KryptDevice::loadOption ( const char *opt )
 {
   QString entry = _cfg->readEntry ( opt, KRYPT_CONF_OPT_DEFAULT ).lower();
 
@@ -391,7 +418,7 @@ KryptDevice::OptionType KryptDevice::loadOption ( const char *opt )
   return OptionDefault;
 }
 
-void KryptDevice::saveOption ( const char *opt, KryptDevice::OptionType optVal )
+void KryptDevice::saveOption ( const char *opt, KryptDevice::KryptDevice::OptionType optVal )
 {
   const char *val = KRYPT_CONF_OPT_DEFAULT;
 
@@ -403,7 +430,7 @@ void KryptDevice::saveOption ( const char *opt, KryptDevice::OptionType optVal )
 
 void KryptDevice::slotLoadConfig()
 {
-  _cfg->setGroup ( _udi );
+  _cfg->setGroup ( getConfigGroup() );
 
   if ( !_isPresent )
   {
@@ -473,7 +500,21 @@ void KryptDevice::slotClickDecrypt()
 
 void KryptDevice::slotClickOptions()
 {
-  // TODO
+  if ( _confDialog != 0 )
+  {
+    delete _confDialog;
+    _confDialog = 0;
+  }
+
+  _confDialog = new KryptDevConf ( this );
+
+  connect ( _confDialog, SIGNAL ( signalClosed() ),
+            this, SLOT ( slotClosedConfDialog() ) );
+
+  connect ( _confDialog, SIGNAL ( signalConfigChanged() ),
+            this, SLOT ( slotSaveConfig() ) );
+
+  _confDialog->show();
 }
 
 void KryptDevice::slotPassDecrypt ( const QString &password )
@@ -483,11 +524,22 @@ void KryptDevice::slotPassDecrypt ( const QString &password )
   _halBackend->slotSendPassword ( _cUdi, password.ascii() );
 }
 
-void KryptDevice::passDialogCanceled()
+void KryptDevice::slotClosedPassDialog()
 {
-  // We just set the pointer to 0. This should be called from within the KryptDialog,
-  // which should remove itself (with deleteLater)
-  _passDialog = 0;
+  if ( _passDialog != 0 )
+  {
+    _passDialog->deleteLater();
+    _passDialog = 0;
+  }
+}
+
+void KryptDevice::slotClosedConfDialog()
+{
+  if ( _confDialog != 0 )
+  {
+    _confDialog->deleteLater();
+    _confDialog = 0;
+  }
 }
 
 void KryptDevice::checkNewDevice()
@@ -520,7 +572,95 @@ void KryptDevice::popupPassDialog()
 
   _passDialog = new KryptDialog ( this );
 
+  connect ( _passDialog, SIGNAL ( signalClosed() ),
+            this, SLOT ( slotClosedPassDialog() ) );
+
   _passDialog->show();
 
   // TODO - wallet?
+}
+
+KryptDevice::OptionType KryptDevice::getOptShowMount() const
+{
+  return _showMount;
+}
+
+KryptDevice::OptionType KryptDevice::getOptShowUMount() const
+{
+  return _showUMount;
+}
+
+KryptDevice::OptionType KryptDevice::getOptShowDecrypt() const
+{
+  return _showDecrypt;
+}
+
+KryptDevice::OptionType KryptDevice::getOptShowEncrypt() const
+{
+  return _showEncrypt;
+}
+
+KryptDevice::OptionType KryptDevice::getOptShowOptions() const
+{
+  return _showOptions;
+}
+
+KryptDevice::OptionType KryptDevice::getOptShowPopup() const
+{
+  return _showPopup;
+}
+
+KryptDevice::OptionType KryptDevice::getOptAutoDecrypt() const
+{
+  return _autoDecrypt;
+}
+
+KryptDevice::OptionType KryptDevice::getOptAutoEncrypt() const
+{
+  return _autoEncrypt;
+}
+
+void KryptDevice::setOptShowMount ( KryptDevice::OptionType nOpt )
+{
+  _showMount = nOpt;
+}
+
+void KryptDevice::setOptShowUMount ( KryptDevice::OptionType nOpt )
+{
+  _showUMount = nOpt;
+}
+
+void KryptDevice::setOptShowDecrypt ( KryptDevice::OptionType nOpt )
+{
+  _showDecrypt = nOpt;
+}
+
+void KryptDevice::setOptShowEncrypt ( KryptDevice::OptionType nOpt )
+{
+  _showEncrypt = nOpt;
+}
+
+void KryptDevice::setOptShowOptions ( KryptDevice::OptionType nOpt )
+{
+  _showOptions = nOpt;
+}
+
+void KryptDevice::setOptShowPopup ( KryptDevice::OptionType nOpt )
+{
+  _showPopup = nOpt;
+}
+
+void KryptDevice::setOptAutoDecrypt ( KryptDevice::OptionType nOpt )
+{
+  _autoDecrypt = nOpt;
+}
+
+void KryptDevice::setOptAutoEncrypt ( KryptDevice::OptionType nOpt )
+{
+  _autoEncrypt = nOpt;
+}
+
+void KryptDevice::setIgnored ( bool newIgnored )
+{
+  _isIgnored = newIgnored;
 }

@@ -18,19 +18,58 @@
  *   51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.           *
  ***************************************************************************/
 
+#include <qpixmap.h>
+#include <kiconloader.h>
+#include <kglobal.h>
+
+#include "kryptdevice.h"
 #include "kryptdevitem.h"
 
-KryptDevItem::KryptDevItem ( const QString &myUdi, QListBox * listbox, const QString & text ) :
-    QListBoxText ( listbox, text ), udi ( myUdi )
+KryptDevItem::KryptDevItem ( QListView * parent, KryptDevice *kryptDev ) :
+    QListViewItem ( parent ), _kryptDev ( kryptDev )
+{
+  doSetup();
+}
+
+KryptDevItem::~KryptDevItem()
 {
 }
 
-KryptDevItem::KryptDevItem ( const QString &myUdi, const QString & text ) :
-    QListBoxText ( text ), udi ( myUdi )
+void KryptDevItem::doSetup()
 {
+  setPixmap ( KRYPT_DEV_ITEM_COL_NAME, _kryptDev->getIcon ( KIcon::SizeSmall ) );
+  setText ( KRYPT_DEV_ITEM_COL_NAME, _kryptDev->getName() );
+  setText ( KRYPT_DEV_ITEM_COL_BLOCK_DEV, _kryptDev->getBlockDev() );
+  void configureKryptDev();
+
+  _ignored = false;
+
+  if ( _kryptDev->isIgnored() )
+  {
+    toggleIgnored();
+  }
 }
 
-KryptDevItem::KryptDevItem ( const QString &myUdi, QListBox * listbox, const QString & text, QListBoxItem * after ) :
-    QListBoxText ( listbox, text, after ), udi ( myUdi )
+bool KryptDevItem::isIgnored()
 {
+  return _ignored;
+}
+
+void KryptDevItem::toggleIgnored()
+{
+  _ignored = !_ignored;
+
+  if ( _ignored )
+  {
+    setPixmap ( KRYPT_DEV_ITEM_COL_IGNORED, KGlobal::iconLoader()->loadIcon ( "button_cancel", KIcon::NoGroup, KIcon::SizeSmall ) );
+  }
+  else
+  {
+    setPixmap ( KRYPT_DEV_ITEM_COL_IGNORED, 0 );
+  }
+}
+
+KryptDevice *KryptDevItem::getKryptDevice()
+{
+  return _kryptDev;
 }

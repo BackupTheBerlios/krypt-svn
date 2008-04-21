@@ -25,25 +25,31 @@
 #include <kdialogbase.h>
 
 #include "confdialog.h"
+#include "kryptdevice.h"
 
 class KryptConf : public KDialogBase
 {
   Q_OBJECT
 
 public:
-  KryptConf ( KConfig *cfg );
+  KryptConf ( KConfig *cfg, QValueList<KryptDevice*> devices );
   ~KryptConf();
 
 signals:
-  void sigConfChanged();
+  void signalConfigChanged();
+  void signalClosed();
 
 protected slots:
   void slotCancel();
   void slotOk();
+  void slotRegenerateDeviceList();
+  void slotDoubleClicked ( QListViewItem *, const QPoint &, int );
 
 private:
   ConfDialog* _dlg;
   KConfig *_cfg;
+  QValueList<KryptDevice*> _devices;
+  bool _isLeaving;
 };
 
 #endif // _KRYPT_CONF_H_

@@ -45,6 +45,9 @@ public:
 
   QString getPassword();
 
+signals:
+  void signalClosed();
+
 public slots:
   void slotPassError ( const QString &errName, const QString &errMsg );
 

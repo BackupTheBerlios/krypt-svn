@@ -188,7 +188,7 @@ void HALBackend::addDevice ( const QString& udi )
   {
     QString luksUdi = getHalPropertyString ( udi, "volume.crypto_luks.clear.backing_volume" );
 
-    sendInfo ( QString ( "Added Clear device '%1', luks_vol: '%2'\n" ).arg ( udi ).arg ( luksUdi ) );
+    sendInfo ( QString ( "Added Clear device '%1', luks_vol: '%2'" ).arg ( udi ).arg ( luksUdi ) );
 
     if ( luksToClear.contains ( luksUdi ) )
     {

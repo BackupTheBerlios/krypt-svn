@@ -273,6 +273,8 @@ void KryptApp::checkConfig()
 
   QString confVer = _cfg.readEntry ( KRYPT_CONF_VERSION, "0" );
 
+  bool doSync = false;
+
   if ( confVer == "0" )
   {
     // Remove options from older version. Sorry ;)
@@ -280,9 +282,17 @@ void KryptApp::checkConfig()
     _cfg.deleteGroup ( "device_desc" );
     _cfg.deleteGroup ( "tray" );
     _cfg.deleteGroup ( "devices" );
+    doSync = true;
   }
 
-  _cfg.writeEntry ( KRYPT_CONF_VERSION, KRYPT_VERSION_STRING );
+  if ( confVer != KRYPT_VERSION_STRING )
+  {
+    _cfg.writeEntry ( KRYPT_CONF_VERSION, KRYPT_VERSION_STRING );
+    doSync = true;
+  }
 
-  _cfg.sync();
+  if ( doSync )
+  {
+    _cfg.sync();
+  }
 }

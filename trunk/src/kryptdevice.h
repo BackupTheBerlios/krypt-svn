@@ -164,6 +164,7 @@ private:
   void popupPassDialog();
   void recreateCUdi();
   void checkNewDevice();
+  void loadGlobalOptions();
 };
 
 #endif // _KRYPT_DEVICE_H_

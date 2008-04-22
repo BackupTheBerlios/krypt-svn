@@ -147,6 +147,33 @@ bool HALBackend::isDevicePresent ( const QString& udi )
   return luksToClear.contains ( udi );
 }
 
+HALBackend::VolHotplugType HALBackend::isDeviceHotpluggable ( const QString & udi )
+{
+  if ( !hasHalProperty ( udi, "block.storage_device" ) )
+  {
+    return VolHotplugUnknown;
+  }
+
+  QString storageUdi = getHalPropertyString ( udi, "block.storage_device" );
+
+  if ( storageUdi.length() < 1 )
+  {
+    return VolHotplugUnknown;
+  }
+
+  if ( !hasHalProperty ( storageUdi, "storage.hotpluggable" ) )
+  {
+    return VolHotplugUnknown;
+  }
+
+  if ( getHalPropertyBool ( storageUdi, "storage.hotpluggable" ) )
+  {
+    return VolHotplug;
+  }
+
+  return VolNotHotplug;
+}
+
 bool HALBackend::getDeviceInfo ( const QString& udi, QString &vendor, QString &product, QString &blockDevice, QString &type, QString &mountPoint )
 {
   if ( !luksToClear.contains ( udi ) ) return false;
@@ -176,7 +203,7 @@ void HALBackend::addDevice ( const QString& udi )
   /* We don't deal with devices that do not expose their capabilities.
   If we don't check this, we will get a lot of warning messages from libhal */
 
-  if ( !libhal_device_property_exists ( _halContext, udi.ascii(), "info.capabilities", NULL ) )
+  if ( !hasHalProperty ( udi, "info.capabilities" ) )
     return;
 
   /* Add volume block devices */
@@ -184,7 +211,7 @@ void HALBackend::addDevice ( const QString& udi )
     return;
 
   /* We got a device which has underlying LUKS volume */
-  if ( libhal_device_property_exists ( _halContext, udi.ascii(), "volume.crypto_luks.clear.backing_volume", NULL ) )
+  if ( hasHalProperty ( udi, "volume.crypto_luks.clear.backing_volume" ) )
   {
     QString luksUdi = getHalPropertyString ( udi, "volume.crypto_luks.clear.backing_volume" );
 
@@ -660,6 +687,13 @@ error:
   s_HALBackend->sigError ( QString ( udi ), errorName, errorMsg );
 
   return;
+}
+
+bool HALBackend::hasHalProperty ( const QString &udi, const QString &key )
+{
+  if ( udi.length() < 1 ) return false;
+
+  return libhal_device_property_exists ( _halContext, udi.ascii(), key.ascii(), NULL );
 }
 
 QString HALBackend::getHalPropertyString ( const QString &udi, const QString &key )

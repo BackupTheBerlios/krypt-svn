@@ -441,9 +441,24 @@ void KryptDevice::slotLoadConfig()
     _mountPoint = _cfg->readEntry ( "dev_mount_point", "" );
   }
 
-  _isIgnored = _cfg->readBoolEntry ( "is_ignored", false );
+  if ( _cfg->hasKey ( "is_ignored" ) )
+  {
+    _isIgnored = _cfg->readBoolEntry ( "is_ignored", false );
+  }
+  else
+  {
+    if ( _halBackend->isDeviceHotpluggable ( _udi ) == HALBackend::VolNotHotplug )
+    {
+      _isIgnored = true;
+    }
+    else
+    {
+      _isIgnored = false;
+    }
+  }
 
   _showMount = loadOption ( KRYPT_CONF_SHOW_MOUNT );
+
   _showUMount = loadOption ( KRYPT_CONF_SHOW_UMOUNT );
   _showEncrypt = loadOption ( KRYPT_CONF_SHOW_ENCRYPT );
   _showDecrypt = loadOption ( KRYPT_CONF_SHOW_DECRYPT );
@@ -452,6 +467,11 @@ void KryptDevice::slotLoadConfig()
   _autoDecrypt = loadOption ( KRYPT_CONF_AUTO_DECRYPT );
   _showPopup = loadOption ( KRYPT_CONF_SHOW_POPUP );
 
+  loadGlobalOptions();
+}
+
+void KryptDevice::loadGlobalOptions()
+{
   _cfg->setGroup ( KRYPT_CONF_GLOBAL_GROUP );
 
   _globShowMount = _cfg->readBoolEntry ( KRYPT_CONF_SHOW_MOUNT, true );

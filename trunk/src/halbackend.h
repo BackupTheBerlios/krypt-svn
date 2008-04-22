@@ -36,9 +36,8 @@ class HALBackend : public QObject
   Q_OBJECT
 
 public:
-  /**
-   * Default Destructor
-   */
+  enum VolHotplugType { VolHotplugUnknown, VolHotplug, VolNotHotplug };
+
   virtual ~HALBackend();
 
   static HALBackend *get();
@@ -48,6 +47,8 @@ public:
   bool isOK();
   void initScan();
   bool isDevicePresent ( const QString& udi );
+  VolHotplugType isDeviceHotpluggable ( const QString & udi );
+
   bool getDeviceInfo ( const QString& udi,
                        QString &vendor, QString &product,
                        QString &blockDevice, QString &type,
@@ -90,6 +91,7 @@ private:
   VolMapStatus volumeStatus ( const QString &udi );
   QString getHalPropertyString ( const QString &udi, const QString &prop );
   bool getHalPropertyBool ( const QString &udi, const QString &key );
+  bool hasHalProperty ( const QString &udi, const QString &key );
 
   void addDevice ( const QString& udi );
   void removeDevice ( const QString& udi );

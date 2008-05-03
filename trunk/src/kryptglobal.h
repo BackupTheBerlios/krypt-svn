@@ -46,9 +46,12 @@
 #define KRYPT_CONF_AUTO_ENCRYPT  "auto_encrypt"
 #define KRYPT_CONF_AUTO_DECRYPT  "auto_decrypt"
 
+#define KRYPT_CONF_PASS_IN_WALLET "use_kwallet"
+
+// All the following HAVE TO BE lowercase!
+
 #define KRYPT_CONF_OPT_ON        "on"
 #define KRYPT_CONF_OPT_OFF       "off"
 #define KRYPT_CONF_OPT_DEFAULT   "default"
-
 
 #endif // _KRYPT_H_

@@ -9,7 +9,7 @@
             <x>0</x>
             <y>0</y>
             <width>755</width>
-            <height>348</height>
+            <height>447</height>
         </rect>
     </property>
     <property name="sizePolicy">
@@ -243,7 +243,10 @@
                         <cstring>cIgnore</cstring>
                     </property>
                     <property name="text">
-                        <string>Ignore Volume</string>
+                        <string>&amp;Ignore Volume</string>
+                    </property>
+                    <property name="accel">
+                        <string>Alt+I</string>
                     </property>
                 </widget>
             </hbox>
@@ -1988,6 +1991,83 @@ on umount</string>
                 </spacer>
             </hbox>
         </widget>
+        <widget class="QGroupBox">
+            <property name="name">
+                <cstring>groupBox9</cstring>
+            </property>
+            <property name="title">
+                <string>Password</string>
+            </property>
+            <vbox>
+                <property name="name">
+                    <cstring>unnamed</cstring>
+                </property>
+                <widget class="QLayoutWidget">
+                    <property name="name">
+                        <cstring>layout48</cstring>
+                    </property>
+                    <hbox>
+                        <property name="name">
+                            <cstring>unnamed</cstring>
+                        </property>
+                        <widget class="QLabel">
+                            <property name="name">
+                                <cstring>textLabel1_2</cstring>
+                            </property>
+                            <property name="text">
+                                <string>Password:</string>
+                            </property>
+                        </widget>
+                        <widget class="QLineEdit">
+                            <property name="name">
+                                <cstring>linePass</cstring>
+                            </property>
+                            <property name="echoMode">
+                                <enum>Password</enum>
+                            </property>
+                        </widget>
+                    </hbox>
+                </widget>
+                <widget class="QLayoutWidget">
+                    <property name="name">
+                        <cstring>layout212</cstring>
+                    </property>
+                    <hbox>
+                        <property name="name">
+                            <cstring>unnamed</cstring>
+                        </property>
+                        <spacer>
+                            <property name="name">
+                                <cstring>spacer609</cstring>
+                            </property>
+                            <property name="orientation">
+                                <enum>Horizontal</enum>
+                            </property>
+                            <property name="sizeType">
+                                <enum>Expanding</enum>
+                            </property>
+                            <property name="sizeHint">
+                                <size>
+                                    <width>430</width>
+                                    <height>20</height>
+                                </size>
+                            </property>
+                        </spacer>
+                        <widget class="QCheckBox">
+                            <property name="name">
+                                <cstring>cStorePass</cstring>
+                            </property>
+                            <property name="text">
+                                <string>&amp;Store password</string>
+                            </property>
+                            <property name="accel">
+                                <string>Alt+S</string>
+                            </property>
+                        </widget>
+                    </hbox>
+                </widget>
+            </vbox>
+        </widget>
         <spacer>
             <property name="name">
                 <cstring>spacer1</cstring>
@@ -2022,6 +2102,8 @@ on umount</string>
     </connection>
 </connections>
 <tabstops>
+    <tabstop>linePass</tabstop>
+    <tabstop>cStorePass</tabstop>
     <tabstop>cIgnore</tabstop>
     <tabstop>rMountShow</tabstop>
     <tabstop>rMountHide</tabstop>

@@ -22,6 +22,8 @@
 #include <qcheckbox.h>
 #include <kactionselector.h>
 #include <qradiobutton.h>
+#include <klocale.h>
+#include <kmessagebox.h>
 
 #include "kryptdevitem.h"
 #include "kryptglobal.h"
@@ -71,6 +73,15 @@ KryptConf::KryptConf ( KConfig *cfg, QValueList<KryptDevice*> devices ) :
   else
   {
     _dlg->rDropDown->setChecked ( true );
+  }
+
+  if ( _cfg->readBoolEntry ( KRYPT_CONF_PASS_IN_WALLET, true ) )
+  {
+    _dlg->rStoreKWallet->setChecked ( true );
+  }
+  else
+  {
+    _dlg->rStoreConfig->setChecked ( true );
   }
 
   slotRegenerateDeviceList();
@@ -128,6 +139,28 @@ void KryptConf::slotDoubleClicked ( QListViewItem *item, const QPoint &, int col
 
 void KryptConf::slotOk()
 {
+  if ( !_dlg->rStoreKWallet->isChecked() )
+  {
+    // Warning. We want to transfer all plaintext passwords from configuration file
+    // to KDE Wallet (and remove them from configuration file), but not the other
+    // way. So it is impossible to dump passwords stored in the wallet into the configuration
+    // file.
+    int ret = KMessageBox::messageBox ( this, KMessageBox::WarningContinueCancel,
+                                        i18n ( "You have enabled storing unencrypted passwords in configuration file, which is unsafe!\n"
+                                               "You are strongly encouraged to use KDE Wallet for storing passwords.\n"
+                                               "Also, if there are any volume passwords stored in KDE Wallet, they will not be transfered"
+                                               "to the configuration file - you will have to enter them again.\n" ),
+                                        QString::null, KStdGuiItem::cont() );
+
+    if ( ret != KMessageBox::Continue ) return;
+  }
+  else
+  {
+    // Transfer password for each known device from the config file to the wallet
+    // TODO
+    // Try to open the wallet once, here!
+  }
+
   _cfg->setGroup ( KRYPT_CONF_GLOBAL_GROUP );
 
   _cfg->writeEntry ( KRYPT_CONF_SHOW_MOUNT, _dlg->cMount->isChecked() );
@@ -142,6 +175,8 @@ void KryptConf::slotOk()
 
   _cfg->writeEntry ( KRYPT_CONF_GROUP_BY_CAT, _dlg->rGroupActions->isChecked() );
   _cfg->writeEntry ( KRYPT_CONF_FLAT_MENU, _dlg->rFlat->isChecked() );
+
+  _cfg->writeEntry ( KRYPT_CONF_PASS_IN_WALLET, _dlg->rStoreKWallet->isChecked() );
 
   // So we don't update item list in slotRegenerateDeviceList
   _isLeaving = true;

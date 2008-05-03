@@ -9,7 +9,7 @@
             <x>0</x>
             <y>0</y>
             <width>400</width>
-            <height>207</height>
+            <height>238</height>
         </rect>
     </property>
     <property name="sizePolicy">
@@ -29,11 +29,11 @@
     <property name="caption">
         <string>Decrypting Storage Device</string>
     </property>
-    <grid>
+    <vbox>
         <property name="name">
             <cstring>unnamed</cstring>
         </property>
-        <widget class="QLayoutWidget" row="0" column="0">
+        <widget class="QLayoutWidget">
             <property name="name">
                 <cstring>layout5</cstring>
             </property>
@@ -121,9 +121,9 @@
                 </widget>
             </hbox>
         </widget>
-        <widget class="QLayoutWidget" row="1" column="0">
+        <widget class="QLayoutWidget">
             <property name="name">
-                <cstring>layout4</cstring>
+                <cstring>layout315</cstring>
             </property>
             <hbox>
                 <property name="name">
@@ -133,8 +133,14 @@
                     <property name="name">
                         <cstring>textLabel1</cstring>
                     </property>
+                    <property name="frameShape">
+                        <enum>NoFrame</enum>
+                    </property>
+                    <property name="frameShadow">
+                        <enum>Plain</enum>
+                    </property>
                     <property name="text">
-                        <string>&amp;Password:</string>
+                        <string>P&amp;assword:</string>
                     </property>
                     <property name="buddy" stdset="0">
                         <cstring>passwordEdit</cstring>
@@ -161,7 +167,76 @@
                 </widget>
             </hbox>
         </widget>
-        <widget class="QGroupBox" row="2" column="0">
+        <widget class="QLayoutWidget">
+            <property name="name">
+                <cstring>layout314</cstring>
+            </property>
+            <hbox>
+                <property name="name">
+                    <cstring>unnamed</cstring>
+                </property>
+                <spacer>
+                    <property name="name">
+                        <cstring>spacer435</cstring>
+                    </property>
+                    <property name="orientation">
+                        <enum>Horizontal</enum>
+                    </property>
+                    <property name="sizeType">
+                        <enum>Expanding</enum>
+                    </property>
+                    <property name="sizeHint">
+                        <size>
+                            <width>134</width>
+                            <height>16</height>
+                        </size>
+                    </property>
+                </spacer>
+                <widget class="QCheckBox">
+                    <property name="name">
+                        <cstring>cStorePass</cstring>
+                    </property>
+                    <property name="text">
+                        <string>&amp;Store Password</string>
+                    </property>
+                    <property name="accel">
+                        <string>Alt+S</string>
+                    </property>
+                </widget>
+                <spacer>
+                    <property name="name">
+                        <cstring>spacer434</cstring>
+                    </property>
+                    <property name="orientation">
+                        <enum>Horizontal</enum>
+                    </property>
+                    <property name="sizeType">
+                        <enum>Fixed</enum>
+                    </property>
+                    <property name="sizeHint">
+                        <size>
+                            <width>16</width>
+                            <height>16</height>
+                        </size>
+                    </property>
+                </spacer>
+                <widget class="QCheckBox">
+                    <property name="name">
+                        <cstring>cAutoDecrypt</cstring>
+                    </property>
+                    <property name="enabled">
+                        <bool>false</bool>
+                    </property>
+                    <property name="text">
+                        <string>Decrypt &amp;Automatically</string>
+                    </property>
+                    <property name="accel">
+                        <string>Alt+A</string>
+                    </property>
+                </widget>
+            </hbox>
+        </widget>
+        <widget class="QGroupBox">
             <property name="name">
                 <cstring>errorBox</cstring>
             </property>
@@ -201,7 +276,15 @@
                 </widget>
             </grid>
         </widget>
-    </grid>
+    </vbox>
 </widget>
+<connections>
+    <connection>
+        <sender>cStorePass</sender>
+        <signal>toggled(bool)</signal>
+        <receiver>cAutoDecrypt</receiver>
+        <slot>setEnabled(bool)</slot>
+    </connection>
+</connections>
 <layoutdefaults spacing="6" margin="11"/>
 </UI>

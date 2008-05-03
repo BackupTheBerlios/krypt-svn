@@ -21,8 +21,10 @@
 #include <qcheckbox.h>
 #include <qradiobutton.h>
 #include <qlabel.h>
+#include <qlineedit.h>
 #include <kactionselector.h>
 #include <klocale.h>
+#include <kmessagebox.h>
 
 #include "kryptdevice.h"
 #include "kryptglobal.h"
@@ -56,7 +58,12 @@ KryptDevConf::KryptDevConf ( KryptDevice *kDev ) :
   setButtonGroup ( _kryptDev->getOptAutoDecrypt(), _dlg->rAutoDecryptYes, _dlg->rAutoDecryptNo, _dlg->rAutoDecryptDefault );
   setButtonGroup ( _kryptDev->getOptAutoEncrypt(), _dlg->rAutoEncryptYes, _dlg->rAutoEncryptNo, _dlg->rAutoEncryptDefault );
 
+  _dlg->cStorePass->setChecked ( _kryptDev->getStorePass() );
+
+  _dlg->linePass->setText ( _kryptDev->getPassword() );
+
   _dlg->lDevIcon->setPixmap ( _kryptDev->getIcon() );
+
   _dlg->lName->setText ( _kryptDev->getName() );
   _dlg->lDevice->setText ( _kryptDev->getBlockDev() );
 
@@ -79,6 +86,18 @@ KryptDevConf::~KryptDevConf()
 
 void KryptDevConf::slotOk()
 {
+  if ( _dlg->cStorePass->isChecked() && !_kryptDev->usesKWallet() )
+  {
+    int ret = KMessageBox::messageBox ( this, KMessageBox::WarningContinueCancel,
+                                        i18n ( "You have selected to store the password. "
+                                               "However, use of KDE Wallet is disabled, so unencrypted password will be "
+                                               "saved in configuration file. This is unsafe!\n"
+                                               "You are strongly encouraged to enable KDE Wallet in Krypt's global configuration." ),
+                                        QString::null, KStdGuiItem::cont() );
+
+    if ( ret != KMessageBox::Continue ) return;
+  }
+
   _kryptDev->setIgnored ( _dlg->cIgnore->isChecked() );
 
   _kryptDev->setOptShowMount ( getGroupVal ( _dlg->rMountShow, _dlg->rMountHide, _dlg->rMountDefault ) );
@@ -89,6 +108,10 @@ void KryptDevConf::slotOk()
   _kryptDev->setOptShowPopup ( getGroupVal ( _dlg->rShowPopupYes, _dlg->rShowPopupNo, _dlg->rShowPopupDefault ) );
   _kryptDev->setOptAutoEncrypt ( getGroupVal ( _dlg->rAutoEncryptYes, _dlg->rAutoEncryptNo, _dlg->rAutoEncryptDefault ) );
   _kryptDev->setOptAutoDecrypt ( getGroupVal ( _dlg->rAutoDecryptYes, _dlg->rAutoDecryptNo, _dlg->rAutoDecryptDefault ) );
+
+  _kryptDev->setStorePass ( _dlg->cStorePass->isChecked() );
+
+  _kryptDev->setPassword ( _dlg->linePass->text() );
 
   hide();
 
@@ -114,6 +137,8 @@ void KryptDevConf::slotDefault()
   _dlg->rShowPopupDefault->setChecked ( true );
   _dlg->rAutoDecryptDefault->setChecked ( true );
   _dlg->rAutoEncryptDefault->setChecked ( true );
+
+  _dlg->cStorePass->setChecked ( false );
 }
 
 KryptDevice::OptionType KryptDevConf::getGroupVal ( QRadioButton *on, QRadioButton *off, QRadioButton * ) const

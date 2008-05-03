@@ -8,8 +8,8 @@
         <rect>
             <x>0</x>
             <y>0</y>
-            <width>538</width>
-            <height>461</height>
+            <width>536</width>
+            <height>531</height>
         </rect>
     </property>
     <property name="sizePolicy">
@@ -23,7 +23,7 @@
     <property name="caption">
         <string>Krypt Configuration</string>
     </property>
-    <vbox>
+    <hbox>
         <property name="name">
             <cstring>unnamed</cstring>
         </property>
@@ -38,16 +38,16 @@
                 <attribute name="title">
                     <string>&amp;Global Options</string>
                 </attribute>
-                <vbox>
+                <hbox>
                     <property name="name">
                         <cstring>unnamed</cstring>
                     </property>
                     <spacer>
                         <property name="name">
-                            <cstring>spacer14</cstring>
+                            <cstring>spacer12</cstring>
                         </property>
                         <property name="orientation">
-                            <enum>Vertical</enum>
+                            <enum>Horizontal</enum>
                         </property>
                         <property name="sizeType">
                             <enum>Expanding</enum>
@@ -61,18 +61,223 @@
                     </spacer>
                     <widget class="QLayoutWidget">
                         <property name="name">
-                            <cstring>layout11</cstring>
+                            <cstring>layout9</cstring>
                         </property>
-                        <hbox>
+                        <vbox>
                             <property name="name">
                                 <cstring>unnamed</cstring>
                             </property>
                             <spacer>
                                 <property name="name">
-                                    <cstring>spacer12</cstring>
+                                    <cstring>spacer14</cstring>
                                 </property>
                                 <property name="orientation">
-                                    <enum>Horizontal</enum>
+                                    <enum>Vertical</enum>
+                                </property>
+                                <property name="sizeType">
+                                    <enum>Expanding</enum>
+                                </property>
+                                <property name="sizeHint">
+                                    <size>
+                                        <width>16</width>
+                                        <height>19</height>
+                                    </size>
+                                </property>
+                            </spacer>
+                            <widget class="QLayoutWidget">
+                                <property name="name">
+                                    <cstring>layout8</cstring>
+                                </property>
+                                <hbox>
+                                    <property name="name">
+                                        <cstring>unnamed</cstring>
+                                    </property>
+                                    <widget class="QLayoutWidget">
+                                        <property name="name">
+                                            <cstring>layout7</cstring>
+                                        </property>
+                                        <vbox>
+                                            <property name="name">
+                                                <cstring>unnamed</cstring>
+                                            </property>
+                                            <spacer>
+                                                <property name="name">
+                                                    <cstring>spacer8_2</cstring>
+                                                </property>
+                                                <property name="orientation">
+                                                    <enum>Vertical</enum>
+                                                </property>
+                                                <property name="sizeType">
+                                                    <enum>Expanding</enum>
+                                                </property>
+                                                <property name="sizeHint">
+                                                    <size>
+                                                        <width>16</width>
+                                                        <height>20</height>
+                                                    </size>
+                                                </property>
+                                            </spacer>
+                                            <widget class="QGroupBox">
+                                                <property name="name">
+                                                    <cstring>groupBox1_2</cstring>
+                                                </property>
+                                                <property name="title">
+                                                    <string>Show Volume Actions</string>
+                                                </property>
+                                                <grid>
+                                                    <property name="name">
+                                                        <cstring>unnamed</cstring>
+                                                    </property>
+                                                    <widget class="QCheckBox" row="2" column="0" rowspan="1" colspan="2">
+                                                        <property name="name">
+                                                            <cstring>cOptions</cstring>
+                                                        </property>
+                                                        <property name="text">
+                                                            <string>&amp;Options</string>
+                                                        </property>
+                                                        <property name="accel">
+                                                            <string>Alt+O</string>
+                                                        </property>
+                                                    </widget>
+                                                    <widget class="QCheckBox" row="0" column="0">
+                                                        <property name="name">
+                                                            <cstring>cMount</cstring>
+                                                        </property>
+                                                        <property name="text">
+                                                            <string>&amp;Mount</string>
+                                                        </property>
+                                                        <property name="accel">
+                                                            <string>Alt+M</string>
+                                                        </property>
+                                                    </widget>
+                                                    <widget class="QCheckBox" row="1" column="1">
+                                                        <property name="name">
+                                                            <cstring>cEncrypt</cstring>
+                                                        </property>
+                                                        <property name="text">
+                                                            <string>Encr&amp;ypt</string>
+                                                        </property>
+                                                        <property name="accel">
+                                                            <string>Alt+Y</string>
+                                                        </property>
+                                                    </widget>
+                                                    <widget class="QCheckBox" row="0" column="1">
+                                                        <property name="name">
+                                                            <cstring>cUmount</cstring>
+                                                        </property>
+                                                        <property name="text">
+                                                            <string>&amp;Umount</string>
+                                                        </property>
+                                                        <property name="accel">
+                                                            <string>Alt+U</string>
+                                                        </property>
+                                                    </widget>
+                                                    <widget class="QCheckBox" row="1" column="0">
+                                                        <property name="name">
+                                                            <cstring>cDecrypt</cstring>
+                                                        </property>
+                                                        <property name="text">
+                                                            <string>&amp;Decrypt</string>
+                                                        </property>
+                                                        <property name="accel">
+                                                            <string>Alt+D</string>
+                                                        </property>
+                                                    </widget>
+                                                </grid>
+                                            </widget>
+                                            <spacer>
+                                                <property name="name">
+                                                    <cstring>spacer8</cstring>
+                                                </property>
+                                                <property name="orientation">
+                                                    <enum>Vertical</enum>
+                                                </property>
+                                                <property name="sizeType">
+                                                    <enum>Expanding</enum>
+                                                </property>
+                                                <property name="sizeHint">
+                                                    <size>
+                                                        <width>16</width>
+                                                        <height>20</height>
+                                                    </size>
+                                                </property>
+                                            </spacer>
+                                        </vbox>
+                                    </widget>
+                                    <spacer>
+                                        <property name="name">
+                                            <cstring>spacer9</cstring>
+                                        </property>
+                                        <property name="orientation">
+                                            <enum>Horizontal</enum>
+                                        </property>
+                                        <property name="sizeType">
+                                            <enum>Expanding</enum>
+                                        </property>
+                                        <property name="sizeHint">
+                                            <size>
+                                                <width>16</width>
+                                                <height>16</height>
+                                            </size>
+                                        </property>
+                                    </spacer>
+                                    <widget class="QGroupBox">
+                                        <property name="name">
+                                            <cstring>groupBox1</cstring>
+                                        </property>
+                                        <property name="title">
+                                            <string>Events</string>
+                                        </property>
+                                        <vbox>
+                                            <property name="name">
+                                                <cstring>unnamed</cstring>
+                                            </property>
+                                            <widget class="QCheckBox">
+                                                <property name="name">
+                                                    <cstring>cAutoEncrypt</cstring>
+                                                </property>
+                                                <property name="text">
+                                                    <string>&amp;Automatically encrypt volumes
+when they are umounted</string>
+                                                </property>
+                                                <property name="accel">
+                                                    <string>Alt+A</string>
+                                                </property>
+                                            </widget>
+                                            <widget class="QCheckBox">
+                                                <property name="name">
+                                                    <cstring>cAutoDecrypt</cstring>
+                                                </property>
+                                                <property name="text">
+                                                    <string>Automatically decrypt &amp;new volumes
+if saved password is found</string>
+                                                </property>
+                                                <property name="accel">
+                                                    <string>Alt+N</string>
+                                                </property>
+                                            </widget>
+                                            <widget class="QCheckBox">
+                                                <property name="name">
+                                                    <cstring>cPopUp</cstring>
+                                                </property>
+                                                <property name="text">
+                                                    <string>Show &amp;password pop-up when new
+encrypted volume is detected</string>
+                                                </property>
+                                                <property name="accel">
+                                                    <string>Alt+P</string>
+                                                </property>
+                                            </widget>
+                                        </vbox>
+                                    </widget>
+                                </hbox>
+                            </widget>
+                            <spacer>
+                                <property name="name">
+                                    <cstring>spacer8_3</cstring>
+                                </property>
+                                <property name="orientation">
+                                    <enum>Vertical</enum>
                                 </property>
                                 <property name="sizeType">
                                     <enum>Expanding</enum>
@@ -84,9 +289,112 @@
                                     </size>
                                 </property>
                             </spacer>
-                            <widget class="QLayoutWidget">
+                            <widget class="QGroupBox">
                                 <property name="name">
-                                    <cstring>layout9</cstring>
+                                    <cstring>groupBox5</cstring>
+                                </property>
+                                <property name="title">
+                                    <string>Context Menu</string>
+                                </property>
+                                <hbox>
+                                    <property name="name">
+                                        <cstring>unnamed</cstring>
+                                    </property>
+                                    <widget class="QButtonGroup">
+                                        <property name="name">
+                                            <cstring>grpMenuStyle</cstring>
+                                        </property>
+                                        <property name="title">
+                                            <string>Style</string>
+                                        </property>
+                                        <vbox>
+                                            <property name="name">
+                                                <cstring>unnamed</cstring>
+                                            </property>
+                                            <widget class="QRadioButton">
+                                                <property name="name">
+                                                    <cstring>rFlat</cstring>
+                                                </property>
+                                                <property name="text">
+                                                    <string>&amp;Flat</string>
+                                                </property>
+                                                <property name="accel">
+                                                    <string>Alt+F</string>
+                                                </property>
+                                            </widget>
+                                            <widget class="QRadioButton">
+                                                <property name="name">
+                                                    <cstring>rDropDown</cstring>
+                                                </property>
+                                                <property name="text">
+                                                    <string>Drop-do&amp;wn</string>
+                                                </property>
+                                                <property name="accel">
+                                                    <string>Alt+W</string>
+                                                </property>
+                                            </widget>
+                                        </vbox>
+                                    </widget>
+                                    <widget class="QButtonGroup">
+                                        <property name="name">
+                                            <cstring>grpMenuGrouping</cstring>
+                                        </property>
+                                        <property name="title">
+                                            <string>Grouping</string>
+                                        </property>
+                                        <vbox>
+                                            <property name="name">
+                                                <cstring>unnamed</cstring>
+                                            </property>
+                                            <widget class="QRadioButton">
+                                                <property name="name">
+                                                    <cstring>rGroupDevices</cstring>
+                                                </property>
+                                                <property name="text">
+                                                    <string>Group &amp;by Devices</string>
+                                                </property>
+                                                <property name="accel">
+                                                    <string>Alt+B</string>
+                                                </property>
+                                            </widget>
+                                            <widget class="QRadioButton">
+                                                <property name="name">
+                                                    <cstring>rGroupActions</cstring>
+                                                </property>
+                                                <property name="text">
+                                                    <string>Group by A&amp;ctions</string>
+                                                </property>
+                                                <property name="accel">
+                                                    <string>Alt+C</string>
+                                                </property>
+                                            </widget>
+                                        </vbox>
+                                    </widget>
+                                </hbox>
+                            </widget>
+                            <spacer>
+                                <property name="name">
+                                    <cstring>spacer11</cstring>
+                                </property>
+                                <property name="orientation">
+                                    <enum>Vertical</enum>
+                                </property>
+                                <property name="sizeType">
+                                    <enum>Expanding</enum>
+                                </property>
+                                <property name="sizeHint">
+                                    <size>
+                                        <width>16</width>
+                                        <height>16</height>
+                                    </size>
+                                </property>
+                            </spacer>
+                            <widget class="QGroupBox">
+                                <property name="name">
+                                    <cstring>groupBox8</cstring>
+                                </property>
+                                <property name="title">
+                                    <string>Passwords</string>
                                 </property>
                                 <vbox>
                                     <property name="name">
@@ -94,283 +402,72 @@
                                     </property>
                                     <widget class="QLayoutWidget">
                                         <property name="name">
-                                            <cstring>layout8</cstring>
+                                            <cstring>layout7</cstring>
                                         </property>
                                         <hbox>
                                             <property name="name">
                                                 <cstring>unnamed</cstring>
                                             </property>
-                                            <widget class="QLayoutWidget">
-                                                <property name="name">
-                                                    <cstring>layout7</cstring>
-                                                </property>
-                                                <vbox>
-                                                    <property name="name">
-                                                        <cstring>unnamed</cstring>
-                                                    </property>
-                                                    <spacer>
-                                                        <property name="name">
-                                                            <cstring>spacer8_2</cstring>
-                                                        </property>
-                                                        <property name="orientation">
-                                                            <enum>Vertical</enum>
-                                                        </property>
-                                                        <property name="sizeType">
-                                                            <enum>Expanding</enum>
-                                                        </property>
-                                                        <property name="sizeHint">
-                                                            <size>
-                                                                <width>16</width>
-                                                                <height>20</height>
-                                                            </size>
-                                                        </property>
-                                                    </spacer>
-                                                    <widget class="QGroupBox">
-                                                        <property name="name">
-                                                            <cstring>groupBox1_2</cstring>
-                                                        </property>
-                                                        <property name="title">
-                                                            <string>Show Volume Actions</string>
-                                                        </property>
-                                                        <grid>
-                                                            <property name="name">
-                                                                <cstring>unnamed</cstring>
-                                                            </property>
-                                                            <widget class="QCheckBox" row="2" column="0" rowspan="1" colspan="2">
-                                                                <property name="name">
-                                                                    <cstring>cOptions</cstring>
-                                                                </property>
-                                                                <property name="text">
-                                                                    <string>&amp;Options</string>
-                                                                </property>
-                                                                <property name="accel">
-                                                                    <string>Alt+O</string>
-                                                                </property>
-                                                            </widget>
-                                                            <widget class="QCheckBox" row="0" column="0">
-                                                                <property name="name">
-                                                                    <cstring>cMount</cstring>
-                                                                </property>
-                                                                <property name="text">
-                                                                    <string>&amp;Mount</string>
-                                                                </property>
-                                                                <property name="accel">
-                                                                    <string>Alt+M</string>
-                                                                </property>
-                                                            </widget>
-                                                            <widget class="QCheckBox" row="1" column="1">
-                                                                <property name="name">
-                                                                    <cstring>cEncrypt</cstring>
-                                                                </property>
-                                                                <property name="text">
-                                                                    <string>&amp;Encrypt</string>
-                                                                </property>
-                                                                <property name="accel">
-                                                                    <string>Alt+E</string>
-                                                                </property>
-                                                            </widget>
-                                                            <widget class="QCheckBox" row="0" column="1">
-                                                                <property name="name">
-                                                                    <cstring>cUmount</cstring>
-                                                                </property>
-                                                                <property name="text">
-                                                                    <string>&amp;Umount</string>
-                                                                </property>
-                                                                <property name="accel">
-                                                                    <string>Alt+U</string>
-                                                                </property>
-                                                            </widget>
-                                                            <widget class="QCheckBox" row="1" column="0">
-                                                                <property name="name">
-                                                                    <cstring>cDecrypt</cstring>
-                                                                </property>
-                                                                <property name="text">
-                                                                    <string>&amp;Decrypt</string>
-                                                                </property>
-                                                                <property name="accel">
-                                                                    <string>Alt+D</string>
-                                                                </property>
-                                                            </widget>
-                                                        </grid>
-                                                    </widget>
-                                                    <spacer>
-                                                        <property name="name">
-                                                            <cstring>spacer8</cstring>
-                                                        </property>
-                                                        <property name="orientation">
-                                                            <enum>Vertical</enum>
-                                                        </property>
-                                                        <property name="sizeType">
-                                                            <enum>Expanding</enum>
-                                                        </property>
-                                                        <property name="sizeHint">
-                                                            <size>
-                                                                <width>16</width>
-                                                                <height>20</height>
-                                                            </size>
-                                                        </property>
-                                                    </spacer>
-                                                </vbox>
-                                            </widget>
                                             <spacer>
                                                 <property name="name">
-                                                    <cstring>spacer9</cstring>
+                                                    <cstring>spacer20</cstring>
                                                 </property>
                                                 <property name="orientation">
                                                     <enum>Horizontal</enum>
                                                 </property>
                                                 <property name="sizeType">
-                                                    <enum>Expanding</enum>
+                                                    <enum>Fixed</enum>
                                                 </property>
                                                 <property name="sizeHint">
                                                     <size>
-                                                        <width>16</width>
-                                                        <height>16</height>
+                                                        <width>31</width>
+                                                        <height>20</height>
                                                     </size>
                                                 </property>
                                             </spacer>
-                                            <widget class="QGroupBox">
-                                                <property name="name">
-                                                    <cstring>groupBox1</cstring>
-                                                </property>
-                                                <property name="title">
-                                                    <string>Events</string>
-                                                </property>
-                                                <vbox>
-                                                    <property name="name">
-                                                        <cstring>unnamed</cstring>
-                                                    </property>
-                                                    <widget class="QCheckBox">
-                                                        <property name="name">
-                                                            <cstring>cAutoEncrypt</cstring>
-                                                        </property>
-                                                        <property name="text">
-                                                            <string>&amp;Automatically encrypt volumes
-when they are umounted</string>
-                                                        </property>
-                                                        <property name="accel">
-                                                            <string>Alt+A</string>
-                                                        </property>
-                                                    </widget>
-                                                    <widget class="QCheckBox">
-                                                        <property name="name">
-                                                            <cstring>cAutoDecrypt</cstring>
-                                                        </property>
-                                                        <property name="text">
-                                                            <string>Automatically decrypt &amp;new volumes
-if saved password is found</string>
-                                                        </property>
-                                                        <property name="accel">
-                                                            <string>Alt+N</string>
-                                                        </property>
-                                                    </widget>
-                                                    <widget class="QCheckBox">
-                                                        <property name="name">
-                                                            <cstring>cPopUp</cstring>
-                                                        </property>
-                                                        <property name="text">
-                                                            <string>Show &amp;password pop-up when new
-encrypted volume is detected</string>
-                                                        </property>
-                                                        <property name="accel">
-                                                            <string>Alt+P</string>
-                                                        </property>
-                                                    </widget>
-                                                </vbox>
-                                            </widget>
-                                        </hbox>
-                                    </widget>
-                                    <spacer>
-                                        <property name="name">
-                                            <cstring>spacer8_3</cstring>
-                                        </property>
-                                        <property name="orientation">
-                                            <enum>Vertical</enum>
-                                        </property>
-                                        <property name="sizeType">
-                                            <enum>Expanding</enum>
-                                        </property>
-                                        <property name="sizeHint">
-                                            <size>
-                                                <width>16</width>
-                                                <height>21</height>
-                                            </size>
-                                        </property>
-                                    </spacer>
-                                    <widget class="QGroupBox">
-                                        <property name="name">
-                                            <cstring>groupBox5</cstring>
-                                        </property>
-                                        <property name="title">
-                                            <string>Context Menu</string>
-                                        </property>
-                                        <hbox>
-                                            <property name="name">
-                                                <cstring>unnamed</cstring>
-                                            </property>
                                             <widget class="QButtonGroup">
                                                 <property name="name">
-                                                    <cstring>grpMenuStyle</cstring>
+                                                    <cstring>grpPassGrouping</cstring>
+                                                </property>
+                                                <property name="lineWidth">
+                                                    <number>0</number>
                                                 </property>
                                                 <property name="title">
-                                                    <string>Style</string>
+                                                    <string></string>
                                                 </property>
                                                 <vbox>
                                                     <property name="name">
                                                         <cstring>unnamed</cstring>
                                                     </property>
+                                                    <property name="margin">
+                                                        <number>0</number>
+                                                    </property>
+                                                    <property name="spacing">
+                                                        <number>0</number>
+                                                    </property>
                                                     <widget class="QRadioButton">
                                                         <property name="name">
-                                                            <cstring>rFlat</cstring>
+                                                            <cstring>rStoreKWallet</cstring>
+                                                        </property>
+                                                        <property name="enabled">
+                                                            <bool>true</bool>
                                                         </property>
                                                         <property name="text">
-                                                            <string>&amp;Flat</string>
-                                                        </property>
-                                                        <property name="accel">
-                                                            <string>Alt+F</string>
-                                                        </property>
-                                                    </widget>
-                                                    <widget class="QRadioButton">
-                                                        <property name="name">
-                                                            <cstring>rDropDown</cstring>
-                                                        </property>
-                                                        <property name="text">
-                                                            <string>Drop-do&amp;wn</string>
+                                                            <string>Store passwords in KDE &amp;Wallet</string>
                                                         </property>
                                                         <property name="accel">
                                                             <string>Alt+W</string>
                                                         </property>
                                                     </widget>
-                                                </vbox>
-                                            </widget>
-                                            <widget class="QButtonGroup">
-                                                <property name="name">
-                                                    <cstring>grpMenuGrouping</cstring>
-                                                </property>
-                                                <property name="title">
-                                                    <string>Grouping</string>
-                                                </property>
-                                                <vbox>
-                                                    <property name="name">
-                                                        <cstring>unnamed</cstring>
-                                                    </property>
                                                     <widget class="QRadioButton">
                                                         <property name="name">
-                                                            <cstring>rGroupDevices</cstring>
+                                                            <cstring>rStoreConfig</cstring>
+                                                        </property>
+                                                        <property name="enabled">
+                                                            <bool>true</bool>
                                                         </property>
                                                         <property name="text">
-                                                            <string>Group &amp;by Devices</string>
-                                                        </property>
-                                                        <property name="accel">
-                                                            <string>Alt+B</string>
-                                                        </property>
-                                                    </widget>
-                                                    <widget class="QRadioButton">
-                                                        <property name="name">
-                                                            <cstring>rGroupActions</cstring>
-                                                        </property>
-                                                        <property name="text">
-                                                            <string>Group by A&amp;ctions</string>
+                                                            <string>Store passwords in &amp;config file (UNENCRYPTED!)</string>
                                                         </property>
                                                         <property name="accel">
                                                             <string>Alt+C</string>
@@ -384,10 +481,10 @@ encrypted volume is detected</string>
                             </widget>
                             <spacer>
                                 <property name="name">
-                                    <cstring>spacer13</cstring>
+                                    <cstring>spacer15</cstring>
                                 </property>
                                 <property name="orientation">
-                                    <enum>Horizontal</enum>
+                                    <enum>Vertical</enum>
                                 </property>
                                 <property name="sizeType">
                                     <enum>Expanding</enum>
@@ -395,18 +492,18 @@ encrypted volume is detected</string>
                                 <property name="sizeHint">
                                     <size>
                                         <width>16</width>
-                                        <height>16</height>
+                                        <height>18</height>
                                     </size>
                                 </property>
                             </spacer>
-                        </hbox>
+                        </vbox>
                     </widget>
                     <spacer>
                         <property name="name">
-                            <cstring>spacer15</cstring>
+                            <cstring>spacer13</cstring>
                         </property>
                         <property name="orientation">
-                            <enum>Vertical</enum>
+                            <enum>Horizontal</enum>
                         </property>
                         <property name="sizeType">
                             <enum>Expanding</enum>
@@ -418,7 +515,7 @@ encrypted volume is detected</string>
                             </size>
                         </property>
                     </spacer>
-                </vbox>
+                </hbox>
             </widget>
             <widget class="QWidget">
                 <property name="name">
@@ -588,7 +685,25 @@ To edit detailed options of the volume, double click on its name.</string>
                 </hbox>
             </widget>
         </widget>
-    </vbox>
+    </hbox>
 </widget>
+<tabstops>
+    <tabstop>tabWidget3</tabstop>
+    <tabstop>cMount</tabstop>
+    <tabstop>cUmount</tabstop>
+    <tabstop>cDecrypt</tabstop>
+    <tabstop>cEncrypt</tabstop>
+    <tabstop>cOptions</tabstop>
+    <tabstop>cAutoEncrypt</tabstop>
+    <tabstop>cAutoDecrypt</tabstop>
+    <tabstop>cPopUp</tabstop>
+    <tabstop>rFlat</tabstop>
+    <tabstop>rDropDown</tabstop>
+    <tabstop>rGroupDevices</tabstop>
+    <tabstop>rGroupActions</tabstop>
+    <tabstop>rStoreKWallet</tabstop>
+    <tabstop>rStoreConfig</tabstop>
+    <tabstop>listKnown</tabstop>
+</tabstops>
 <layoutdefaults spacing="6" margin="11"/>
 </UI>

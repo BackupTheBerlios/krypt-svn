@@ -48,6 +48,7 @@ protected slots:
 private:
   KryptDevice *_kryptDev;
   DevConfDialog* _dlg;
+  bool _passInKWallet;
 
   void setButtonGroup ( KryptDevice::OptionType oVal, QRadioButton *on, QRadioButton *off, QRadioButton *def );
   KryptDevice::OptionType getGroupVal ( QRadioButton *on, QRadioButton *off, QRadioButton *def ) const;

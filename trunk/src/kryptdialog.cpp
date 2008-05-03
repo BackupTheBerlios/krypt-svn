@@ -20,6 +20,11 @@
 
 #include <string.h>
 
+#include <kmessagebox.h>
+
+#include <qcheckbox.h>
+
+#include "kryptglobal.h"
 #include "kryptdevice.h"
 #include "kryptdialog.h"
 #include "kryptdialog.moc"
@@ -44,9 +49,23 @@ KryptDialog::KryptDialog ( KryptDevice *kryptDev ) :
 
   _dlg->encryptedIcon->setPixmap ( _kryptDev->getIcon() );
 
-  enableButton ( User1, false );
+  _dlg->cStorePass->setChecked ( _kryptDev->getStorePass() );
+
+  _dlg->cAutoDecrypt->setChecked ( _kryptDev->shouldAutoDecrypt() );
+
+  _dlg->passwordEdit->setText ( _kryptDev->getPassword() );
+
+  if ( _dlg->passwordEdit->text().isEmpty() )
+  {
+    enableButton ( User1, false );
+  }
+  else
+  {
+    enableButton ( User1, true );
+  }
 
   connect ( _dlg->passwordEdit, SIGNAL ( textChanged ( const QString & ) ),
+
             this, SLOT ( slotPasswordChanged ( const QString & ) ) );
 
   connect ( this, SIGNAL ( cancelClicked() ),
@@ -79,10 +98,11 @@ void KryptDialog::slotPassError ( const QString &errName, const QString &errMsg 
   else if ( errName == "org.freedesktop.Hal.Device.Volume.Crypto.CryptSetupMissing" )
   {
     error = QString ( i18n ( "Decryption failed! Application \"cryptsetup\" not found. "
-                             "Is package with \"cryptsetup\" installed?" ) );
+                             "Is package with \"cryptsetup\" program installed?" ) );
   }
   else if ( errName == "org.freedesktop.Hal.Device.Volume.Crypto.SetupError" )
   {
+    // TODO - maybe show the original error message here?
     error = QString ( i18n ( "%1 is already decrypted!" ).arg ( _kryptDev->getBlockDev() ) );
   }
   else
@@ -104,7 +124,34 @@ void KryptDialog::slotDecrypt()
 {
   if ( _dlg->passwordEdit->text().isEmpty() ) return;
 
-  _kryptDev->slotPassDecrypt ( _dlg->passwordEdit->text() );
+  if ( _dlg->cStorePass->isChecked() && !_kryptDev->usesKWallet() )
+  {
+    int ret = KMessageBox::messageBox ( this, KMessageBox::WarningContinueCancel,
+                                        i18n ( "You have selected to store the password. "
+                                               "However, use of KDE Wallet is disabled, so unencrypted password will be "
+                                               "saved in configuration file. This is unsafe!\n"
+                                               "You are strongly encouraged to enable KDE Wallet in Krypt's global configuration." ),
+                                        QString::null, KStdGuiItem::cont() );
+
+    if ( ret != KMessageBox::Continue ) return;
+  }
+
+  if ( _dlg->cAutoDecrypt->isChecked() )
+  {
+    _kryptDev->setOptAutoDecrypt ( KryptDevice::OptionOn );
+  }
+  else
+  {
+    _kryptDev->setOptAutoDecrypt ( KryptDevice::OptionOff );
+  }
+
+  _kryptDev->setStorePass ( _dlg->cStorePass->isChecked() );
+
+  _kryptDev->setPassword ( _dlg->passwordEdit->text() );
+
+  _kryptDev->slotSaveConfig();
+
+  _kryptDev->slotPassDecrypt ( );
 }
 
 void KryptDialog::slotCancel()

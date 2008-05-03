@@ -95,6 +95,15 @@ public:
 
   void setIgnored ( bool newIgnored );
 
+  bool getStorePass() const;
+  void setStorePass ( bool nVal );
+
+  bool shouldAutoDecrypt() const;
+  bool usesKWallet() const;
+
+  QString getPassword();
+  void setPassword ( const QString &pass );
+
 signals:
   void signalConfigChanged();
 
@@ -110,7 +119,7 @@ public slots:
   void slotClickDecrypt();
   void slotClickOptions();
 
-  void slotPassDecrypt ( const QString &password );
+  void slotPassDecrypt ( );
 
 protected slots:
   void slotClosedPassDialog();
@@ -133,6 +142,9 @@ private:
   QString _type;
   QString _mountPoint;
 
+  QString _password;
+  bool _hasPassword;
+
   bool _isPresent;
   bool _isDecrypted;
   bool _isMounted;
@@ -148,6 +160,7 @@ private:
   bool _globAutoEncrypt;
   bool _globAutoDecrypt;
   bool _globShowPopup;
+  bool _globPassInKWallet;
 
   OptionType _showMount;
   OptionType _showUMount;
@@ -158,6 +171,8 @@ private:
   OptionType _autoDecrypt;
   OptionType _showPopup;
 
+  bool _storePass;
+
   void updateDeviceInfo();
   OptionType loadOption ( const char *opt );
   void saveOption ( const char *opt, OptionType optVal );
@@ -165,6 +180,9 @@ private:
   void recreateCUdi();
   void checkNewDevice();
   void loadGlobalOptions();
+
+  QStringList obfuscate ( const QString & str );
+  QString deobfuscate ( const QStringList & list );
 };
 
 #endif // _KRYPT_DEVICE_H_

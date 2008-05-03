@@ -29,6 +29,9 @@
 #include "kryptdevice.h"
 #include "kryptdevice.moc"
 
+// Lets choose 'exotic' base :)
+#define OBFUSCATE_BASE 35
+
 int KryptDevice::_lastDevID = 0;
 
 KryptDevice::KryptDevice ( KryptApp *kryptApp, const QString & udi ) :
@@ -41,12 +44,18 @@ KryptDevice::KryptDevice ( KryptApp *kryptApp, const QString & udi ) :
   _confDialog = 0;
   _cUdi = 0;
 
+  _hasPassword = false;
+
   _isPresent = false;
   _isDecrypted = false;
   _isMounted = false;
   _isIgnored = false;
 
   _encryptOnUmount = false;
+
+  _storePass = false;
+
+  _password = "";
 
   slotLoadConfig();
 }
@@ -388,6 +397,8 @@ void KryptDevice::slotSaveConfig()
 
   _cfg->writeEntry ( "is_ignored", _isIgnored );
 
+  _cfg->writeEntry ( "store_password", _storePass );
+
   saveOption ( KRYPT_CONF_SHOW_MOUNT, _showMount );
   saveOption ( KRYPT_CONF_SHOW_UMOUNT, _showUMount );
   saveOption ( KRYPT_CONF_SHOW_ENCRYPT, _showEncrypt );
@@ -397,9 +408,48 @@ void KryptDevice::slotSaveConfig()
   saveOption ( KRYPT_CONF_AUTO_DECRYPT, _autoDecrypt );
   saveOption ( KRYPT_CONF_SHOW_POPUP, _showPopup );
 
+  if ( _storePass && !_globPassInKWallet )
+  {
+    // It doesn't even try to encrypt the password,
+    // but makes it a little bit less readable if someone
+    // opens configuration file.
+    _cfg->writeEntry ( "password", obfuscate ( _password ) );
+  }
+  else
+  {
+    _cfg->deleteEntry ( "password" );
+  }
+
   _cfg->sync();
 
   emit signalConfigChanged();
+}
+
+QStringList KryptDevice::obfuscate ( const QString & str )
+{
+  QStringList ret;
+
+  for ( unsigned int i = 0; i < str.length(); ++i )
+  {
+    ret.push_back ( QString::number ( str[i].unicode(), OBFUSCATE_BASE ) );
+  }
+
+  return ret;
+}
+
+QString KryptDevice::deobfuscate ( const QStringList & list )
+{
+  QString ret;
+  bool ok;
+
+  for ( unsigned int i = 0; i < list.size(); ++i )
+  {
+    QChar c = QChar ( list[i].toUShort ( &ok, OBFUSCATE_BASE ) );
+
+    if ( ok ) ret.append ( c );
+  }
+
+  return ret;
 }
 
 KryptDevice::KryptDevice::OptionType KryptDevice::loadOption ( const char *opt )
@@ -430,6 +480,8 @@ void KryptDevice::saveOption ( const char *opt, KryptDevice::KryptDevice::Option
 
 void KryptDevice::slotLoadConfig()
 {
+  loadGlobalOptions();
+
   _cfg->setGroup ( getConfigGroup() );
 
   if ( !_isPresent )
@@ -457,6 +509,8 @@ void KryptDevice::slotLoadConfig()
     }
   }
 
+  _storePass = _cfg->readBoolEntry ( "store_password", false );
+
   _showMount = loadOption ( KRYPT_CONF_SHOW_MOUNT );
 
   _showUMount = loadOption ( KRYPT_CONF_SHOW_UMOUNT );
@@ -467,7 +521,16 @@ void KryptDevice::slotLoadConfig()
   _autoDecrypt = loadOption ( KRYPT_CONF_AUTO_DECRYPT );
   _showPopup = loadOption ( KRYPT_CONF_SHOW_POPUP );
 
-  loadGlobalOptions();
+  if ( _storePass && !_globPassInKWallet )
+  {
+    _password = deobfuscate ( _cfg->readListEntry ( "password" ) );
+  }
+  else
+  {
+    _cfg->deleteEntry ( "password" );
+
+    _cfg->sync();
+  }
 }
 
 void KryptDevice::loadGlobalOptions()
@@ -484,6 +547,8 @@ void KryptDevice::loadGlobalOptions()
   _globAutoDecrypt = _cfg->readBoolEntry ( KRYPT_CONF_AUTO_DECRYPT, false );
 
   _globShowPopup = _cfg->readBoolEntry ( KRYPT_CONF_SHOW_POPUP, true );
+
+  _globPassInKWallet = _cfg->readBoolEntry ( KRYPT_CONF_PASS_IN_WALLET, true );
 }
 
 void KryptDevice::slotClickMount()
@@ -537,11 +602,13 @@ void KryptDevice::slotClickOptions()
   _confDialog->show();
 }
 
-void KryptDevice::slotPassDecrypt ( const QString &password )
+void KryptDevice::slotPassDecrypt ( )
 {
+  if ( _password.length() < 1 ) return;
+
   recreateCUdi();
 
-  _halBackend->slotSendPassword ( _cUdi, password.ascii() );
+  _halBackend->slotSendPassword ( _cUdi, _password.ascii() );
 }
 
 void KryptDevice::slotClosedPassDialog()
@@ -600,6 +667,33 @@ void KryptDevice::popupPassDialog()
   // TODO - wallet?
 }
 
+QString KryptDevice::getPassword()
+{
+  // TODO - wallet/config
+  return _password;
+}
+
+void KryptDevice::setPassword ( const QString & pass )
+{
+  // TODO - wallet/config
+  _password = pass;
+}
+
+bool KryptDevice::usesKWallet() const
+{
+  return _globPassInKWallet;
+}
+
+bool KryptDevice::shouldAutoDecrypt() const
+{
+  if ( _autoDecrypt == OptionOn ) return true;
+
+  if ( _autoDecrypt == OptionOff ) return false;
+
+  // So it's default
+  return _globAutoDecrypt;
+}
+
 KryptDevice::OptionType KryptDevice::getOptShowMount() const
 {
   return _showMount;
@@ -640,6 +734,11 @@ KryptDevice::OptionType KryptDevice::getOptAutoEncrypt() const
   return _autoEncrypt;
 }
 
+bool KryptDevice::getStorePass() const
+{
+  return _storePass;
+}
+
 void KryptDevice::setOptShowMount ( KryptDevice::OptionType nOpt )
 {
   _showMount = nOpt;
@@ -678,6 +777,11 @@ void KryptDevice::setOptAutoDecrypt ( KryptDevice::OptionType nOpt )
 void KryptDevice::setOptAutoEncrypt ( KryptDevice::OptionType nOpt )
 {
   _autoEncrypt = nOpt;
+}
+
+void KryptDevice::setStorePass ( bool nVal )
+{
+  _storePass = nVal;
 }
 
 void KryptDevice::setIgnored ( bool newIgnored )

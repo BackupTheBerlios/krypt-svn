@@ -154,7 +154,7 @@ void KryptApp::slotPassError ( const QString &udi, const QString &errorName, con
   }
 }
 
-void KryptApp::slotError ( const QString &udi, const QString &errorName, const QString &errorMsg )
+void KryptApp::slotError ( const QString &, const QString &, const QString &errorMsg )
 {
   // If we use KMessageBox it is modal dialog - we don't want it,
   // as it breaks dbus/hal communication...
@@ -295,4 +295,9 @@ void KryptApp::checkConfig()
   {
     _cfg.sync();
   }
+}
+
+KryptSystemTray *KryptApp::getKryptTray()
+{
+  return _tray;
 }

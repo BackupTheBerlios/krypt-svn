@@ -144,7 +144,7 @@
                                         <cstring>lDevice</cstring>
                                     </property>
                                     <property name="text">
-                                        <string>name</string>
+                                        <string>device</string>
                                     </property>
                                 </widget>
                                 <spacer>
@@ -187,7 +187,7 @@
                                         <cstring>lPresent</cstring>
                                     </property>
                                     <property name="text">
-                                        <string>name</string>
+                                        <string>present</string>
                                     </property>
                                 </widget>
                                 <spacer>
@@ -2015,7 +2015,10 @@ on umount</string>
                                 <cstring>textLabel1_2</cstring>
                             </property>
                             <property name="text">
-                                <string>Password:</string>
+                                <string>&amp;Password:</string>
+                            </property>
+                            <property name="buddy" stdset="0">
+                                <cstring>linePass</cstring>
                             </property>
                         </widget>
                         <widget class="QLineEdit">

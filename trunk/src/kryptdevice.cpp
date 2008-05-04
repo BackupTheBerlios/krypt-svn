@@ -20,9 +20,15 @@
 
 #include <kconfig.h>
 #include <kdebug.h>
+#include <kpassivepopup.h>
+
+#include <qlayout.h>
+#include <qvbox.h>
+#include <qhbox.h>
 
 #include "kryptglobal.h"
 #include "halbackend.h"
+#include "kryptsystray.h"
 #include "kryptapp.h"
 #include "kryptdialog.h"
 #include "kryptdevconf.h"
@@ -43,8 +49,6 @@ KryptDevice::KryptDevice ( KryptApp *kryptApp, const QString & udi ) :
   _passDialog = 0;
   _confDialog = 0;
   _cUdi = 0;
-
-  _hasPassword = false;
 
   _isPresent = false;
   _isDecrypted = false;
@@ -258,6 +262,41 @@ bool KryptDevice::autoDecrypt() const
   return _globAutoDecrypt;
 }
 
+#include <qpushbutton.h>
+
+void KryptDevice::showTrayMessage ( const QString & msg )
+{
+  if ( !_kryptApp ) return;
+
+  if ( !_kryptApp->getKryptTray() ) return;
+
+  KPassivePopup *pop = new KPassivePopup ( _kryptApp->getKryptTray() );
+
+  pop->setAutoDelete ( true );
+
+  QHBox *hb = new QHBox ( pop );
+
+  hb->setSpacing ( KDialog::spacingHint() );
+
+  QLabel * labIcon = new QLabel ( hb );
+
+  labIcon->setPixmap ( getIcon() );
+
+  QVBox *vb = new QVBox ( hb );
+
+  QLabel *labName = new QLabel ( QString ( "<b>%1</b>" ).arg ( getName() ), vb );
+
+  labName->setAlignment ( Qt::AlignHCenter );
+
+  QLabel *labMsg = new QLabel ( msg, vb );
+
+  labMsg->setAlignment ( AlignHCenter );
+
+  pop->setView ( hb );
+
+  pop->show();
+}
+
 void KryptDevice::slotHALEvent ( int eventID, const QString& udi )
 {
   if ( udi != _udi )
@@ -275,6 +314,13 @@ void KryptDevice::slotHALEvent ( int eventID, const QString& udi )
       return;
     }
   }
+
+  bool notifEnc = _notifyEncrypt;
+
+  bool notifDec = _notifyDecrypt;
+
+  _notifyEncrypt = false;
+  _notifyDecrypt = false;
 
   bool removePass = false;
 
@@ -301,11 +347,23 @@ void KryptDevice::slotHALEvent ( int eventID, const QString& udi )
       _isDecrypted = true;
       _isMounted = false;
       removePass = true;
+
+      if ( _globNotifyAutoDecrypt && notifDec )
+      {
+        showTrayMessage ( i18n ( "Volume is now: Decrypted" ) );
+      }
+
       break;
 
     case KRYPT_HAL_DEV_EVENT_UNMAPPED:
       _isDecrypted = false;
       _isMounted = false;
+
+      if ( _globNotifyAutoEncrypt && notifEnc )
+      {
+        showTrayMessage ( i18n ( "Volume is now: Encrypted" ) );
+      }
+
       break;
 
     case KRYPT_HAL_DEV_EVENT_MOUNTED:
@@ -322,6 +380,7 @@ void KryptDevice::slotHALEvent ( int eventID, const QString& udi )
       if ( _encryptOnUmount || autoEncrypt() )
       {
         doEncrypt = true;
+        _notifyEncrypt = true;
       }
 
       break;
@@ -363,6 +422,16 @@ void KryptDevice::slotPassError ( const QString &udi, const QString &errorName, 
   if ( !_isPresent )
   {
     updateDeviceInfo();
+  }
+
+  // It is possible that there is no password dialog - when auto decryption
+  // is used, and password was stored. Krypt didn't show password dialog
+  // and tried to decrypt the volume automatically, but, for some reason,
+  // it failed. We want to show it. Also, the user might want to modify
+  // the password in such case.
+  if ( !_passDialog )
+  {
+    createPassDialog();
   }
 
   _passDialog->slotPassError ( errorName, errorMsg );
@@ -546,6 +615,9 @@ void KryptDevice::loadGlobalOptions()
   _globAutoEncrypt = _cfg->readBoolEntry ( KRYPT_CONF_AUTO_ENCRYPT, true );
   _globAutoDecrypt = _cfg->readBoolEntry ( KRYPT_CONF_AUTO_DECRYPT, false );
 
+  _globNotifyAutoEncrypt = _cfg->readBoolEntry ( KRYPT_CONF_NOTIFY_AUTO_ENCRYPT, true );
+  _globNotifyAutoDecrypt = _cfg->readBoolEntry ( KRYPT_CONF_NOTIFY_AUTO_DECRYPT, true );
+
   _globShowPopup = _cfg->readBoolEntry ( KRYPT_CONF_SHOW_POPUP, true );
 
   _globPassInKWallet = _cfg->readBoolEntry ( KRYPT_CONF_PASS_IN_WALLET, true );
@@ -580,6 +652,13 @@ void KryptDevice::slotClickEncrypt()
 void KryptDevice::slotClickDecrypt()
 {
   _encryptOnUmount = false;
+
+  if ( _password.length() > 0 && autoDecrypt() )
+  {
+    slotPassDecrypt();
+    return;
+  }
+
   popupPassDialog();
 }
 
@@ -633,9 +712,16 @@ void KryptDevice::checkNewDevice()
 {
   if ( isIgnored() ) return;
 
-  if ( !showPopup() ) return;
-
   // TODO - Wallet integration
+
+  if ( _password.length() > 0 && autoDecrypt() )
+  {
+    _notifyDecrypt = true;
+    slotPassDecrypt();
+    return;
+  }
+
+  if ( !showPopup() ) return;
 
   popupPassDialog();
 }
@@ -657,14 +743,21 @@ void KryptDevice::popupPassDialog()
     if ( !_isPresent ) return;
   }
 
+  createPassDialog();
+
+  // TODO - wallet?
+}
+
+void KryptDevice::createPassDialog()
+{
+  _notifyDecrypt = false;
+
   _passDialog = new KryptDialog ( this );
 
   connect ( _passDialog, SIGNAL ( signalClosed() ),
             this, SLOT ( slotClosedPassDialog() ) );
 
   _passDialog->show();
-
-  // TODO - wallet?
 }
 
 QString KryptDevice::getPassword()

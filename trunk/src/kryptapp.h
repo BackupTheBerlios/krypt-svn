@@ -50,6 +50,7 @@ public:
   KryptDevice * getDevice ( int id );
   KConfig * getConfig();
   QString getHalDevEventDesc ( int eventID ) const;
+  KryptSystemTray *getKryptTray();
 
 signals:
   void signalConfigChanged();

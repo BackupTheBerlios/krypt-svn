@@ -143,7 +143,6 @@ private:
   QString _mountPoint;
 
   QString _password;
-  bool _hasPassword;
 
   bool _isPresent;
   bool _isDecrypted;
@@ -151,6 +150,8 @@ private:
   bool _isIgnored;
 
   bool _encryptOnUmount;
+  bool _notifyEncrypt;
+  bool _notifyDecrypt;
 
   bool _globShowMount;
   bool _globShowUMount;
@@ -159,6 +160,8 @@ private:
   bool _globShowOptions;
   bool _globAutoEncrypt;
   bool _globAutoDecrypt;
+  bool _globNotifyAutoEncrypt;
+  bool _globNotifyAutoDecrypt;
   bool _globShowPopup;
   bool _globPassInKWallet;
 
@@ -180,9 +183,12 @@ private:
   void recreateCUdi();
   void checkNewDevice();
   void loadGlobalOptions();
+  void createPassDialog();
 
   QStringList obfuscate ( const QString & str );
   QString deobfuscate ( const QStringList & list );
+
+  void showTrayMessage ( const QString & msg );
 };
 
 #endif // _KRYPT_DEVICE_H_

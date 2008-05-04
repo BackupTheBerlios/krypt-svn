@@ -55,6 +55,9 @@ KryptConf::KryptConf ( KConfig *cfg, QValueList<KryptDevice*> devices ) :
   _dlg->cAutoEncrypt->setChecked ( _cfg->readBoolEntry ( KRYPT_CONF_AUTO_ENCRYPT, true ) );
   _dlg->cAutoDecrypt->setChecked ( _cfg->readBoolEntry ( KRYPT_CONF_AUTO_DECRYPT, false ) );
 
+  _dlg->cNotifyAutoEncrypt->setChecked ( _cfg->readBoolEntry ( KRYPT_CONF_NOTIFY_AUTO_ENCRYPT, true ) );
+  _dlg->cNotifyAutoDecrypt->setChecked ( _cfg->readBoolEntry ( KRYPT_CONF_NOTIFY_AUTO_DECRYPT, true ) );
+
   _dlg->cPopUp->setChecked ( _cfg->readBoolEntry ( KRYPT_CONF_SHOW_POPUP, true ) );
 
   if ( _cfg->readBoolEntry ( KRYPT_CONF_GROUP_BY_CAT, false ) )
@@ -171,6 +174,10 @@ void KryptConf::slotOk()
 
   _cfg->writeEntry ( KRYPT_CONF_AUTO_ENCRYPT, _dlg->cAutoEncrypt->isChecked() );
   _cfg->writeEntry ( KRYPT_CONF_AUTO_DECRYPT, _dlg->cAutoDecrypt->isChecked() );
+
+  _cfg->writeEntry ( KRYPT_CONF_NOTIFY_AUTO_ENCRYPT, _dlg->cNotifyAutoEncrypt->isChecked() );
+  _cfg->writeEntry ( KRYPT_CONF_NOTIFY_AUTO_DECRYPT, _dlg->cNotifyAutoDecrypt->isChecked() );
+
   _cfg->writeEntry ( KRYPT_CONF_SHOW_POPUP, _dlg->cPopUp->isChecked() );
 
   _cfg->writeEntry ( KRYPT_CONF_GROUP_BY_CAT, _dlg->rGroupActions->isChecked() );

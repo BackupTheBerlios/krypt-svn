@@ -9,7 +9,7 @@
             <x>0</x>
             <y>0</y>
             <width>536</width>
-            <height>531</height>
+            <height>600</height>
         </rect>
     </property>
     <property name="sizePolicy">
@@ -61,7 +61,7 @@
                     </spacer>
                     <widget class="QLayoutWidget">
                         <property name="name">
-                            <cstring>layout9</cstring>
+                            <cstring>layout327</cstring>
                         </property>
                         <vbox>
                             <property name="name">
@@ -80,7 +80,7 @@
                                 <property name="sizeHint">
                                     <size>
                                         <width>16</width>
-                                        <height>19</height>
+                                        <height>16</height>
                                     </size>
                                 </property>
                             </spacer>
@@ -155,10 +155,10 @@
                                                             <cstring>cEncrypt</cstring>
                                                         </property>
                                                         <property name="text">
-                                                            <string>Encr&amp;ypt</string>
+                                                            <string>&amp;Encrypt</string>
                                                         </property>
                                                         <property name="accel">
-                                                            <string>Alt+Y</string>
+                                                            <string>Alt+E</string>
                                                         </property>
                                                     </widget>
                                                     <widget class="QCheckBox" row="0" column="1">
@@ -261,7 +261,7 @@ if saved password is found</string>
                                                     <cstring>cPopUp</cstring>
                                                 </property>
                                                 <property name="text">
-                                                    <string>Show &amp;password pop-up when new
+                                                    <string>Show password &amp;pop-up when new
 encrypted volume is detected</string>
                                                 </property>
                                                 <property name="accel">
@@ -362,10 +362,10 @@ encrypted volume is detected</string>
                                                     <cstring>rGroupActions</cstring>
                                                 </property>
                                                 <property name="text">
-                                                    <string>Group by A&amp;ctions</string>
+                                                    <string>Group by Ac&amp;tions</string>
                                                 </property>
                                                 <property name="accel">
-                                                    <string>Alt+C</string>
+                                                    <string>Alt+T</string>
                                                 </property>
                                             </widget>
                                         </vbox>
@@ -400,82 +400,55 @@ encrypted volume is detected</string>
                                     <property name="name">
                                         <cstring>unnamed</cstring>
                                     </property>
-                                    <widget class="QLayoutWidget">
+                                    <widget class="QButtonGroup">
                                         <property name="name">
-                                            <cstring>layout7</cstring>
+                                            <cstring>grpPassGrouping</cstring>
                                         </property>
-                                        <hbox>
+                                        <property name="lineWidth">
+                                            <number>0</number>
+                                        </property>
+                                        <property name="title">
+                                            <string></string>
+                                        </property>
+                                        <vbox>
                                             <property name="name">
                                                 <cstring>unnamed</cstring>
                                             </property>
-                                            <spacer>
+                                            <property name="margin">
+                                                <number>0</number>
+                                            </property>
+                                            <property name="spacing">
+                                                <number>0</number>
+                                            </property>
+                                            <widget class="QRadioButton">
                                                 <property name="name">
-                                                    <cstring>spacer20</cstring>
+                                                    <cstring>rStoreKWallet</cstring>
                                                 </property>
-                                                <property name="orientation">
-                                                    <enum>Horizontal</enum>
+                                                <property name="enabled">
+                                                    <bool>true</bool>
                                                 </property>
-                                                <property name="sizeType">
-                                                    <enum>Fixed</enum>
+                                                <property name="text">
+                                                    <string>Store passwords in KDE &amp;Wallet</string>
                                                 </property>
-                                                <property name="sizeHint">
-                                                    <size>
-                                                        <width>31</width>
-                                                        <height>20</height>
-                                                    </size>
+                                                <property name="accel">
+                                                    <string>Alt+W</string>
                                                 </property>
-                                            </spacer>
-                                            <widget class="QButtonGroup">
-                                                <property name="name">
-                                                    <cstring>grpPassGrouping</cstring>
-                                                </property>
-                                                <property name="lineWidth">
-                                                    <number>0</number>
-                                                </property>
-                                                <property name="title">
-                                                    <string></string>
-                                                </property>
-                                                <vbox>
-                                                    <property name="name">
-                                                        <cstring>unnamed</cstring>
-                                                    </property>
-                                                    <property name="margin">
-                                                        <number>0</number>
-                                                    </property>
-                                                    <property name="spacing">
-                                                        <number>0</number>
-                                                    </property>
-                                                    <widget class="QRadioButton">
-                                                        <property name="name">
-                                                            <cstring>rStoreKWallet</cstring>
-                                                        </property>
-                                                        <property name="enabled">
-                                                            <bool>true</bool>
-                                                        </property>
-                                                        <property name="text">
-                                                            <string>Store passwords in KDE &amp;Wallet</string>
-                                                        </property>
-                                                        <property name="accel">
-                                                            <string>Alt+W</string>
-                                                        </property>
-                                                    </widget>
-                                                    <widget class="QRadioButton">
-                                                        <property name="name">
-                                                            <cstring>rStoreConfig</cstring>
-                                                        </property>
-                                                        <property name="enabled">
-                                                            <bool>true</bool>
-                                                        </property>
-                                                        <property name="text">
-                                                            <string>Store passwords in &amp;config file (UNENCRYPTED!)</string>
-                                                        </property>
-                                                        <property name="accel">
-                                                            <string>Alt+C</string>
-                                                        </property>
-                                                    </widget>
-                                                </vbox>
                                             </widget>
-                                        </hbox>
+                                            <widget class="QRadioButton">
+                                                <property name="name">
+                                                    <cstring>rStoreConfig</cstring>
+                                                </property>
+                                                <property name="enabled">
+                                                    <bool>true</bool>
+                                                </property>
+                                                <property name="text">
+                                                    <string>Store passwords in &amp;config file (UNENCRYPTED!)</string>
+                                                </property>
+                                                <property name="accel">
+                                                    <string>Alt+C</string>
+                                                </property>
+                                            </widget>
+                                        </vbox>
                                     </widget>
                                 </vbox>
                             </widget>
@@ -492,7 +465,59 @@ encrypted volume is detected</string>
                                 <property name="sizeHint">
                                     <size>
                                         <width>16</width>
-                                        <height>18</height>
+                                        <height>16</height>
+                                    </size>
+                                </property>
+                            </spacer>
+                            <widget class="QGroupBox">
+                                <property name="name">
+                                    <cstring>groupBox8_2</cstring>
+                                </property>
+                                <property name="title">
+                                    <string>Show notifications for:</string>
+                                </property>
+                                <vbox>
+                                    <property name="name">
+                                        <cstring>unnamed</cstring>
+                                    </property>
+                                    <widget class="QCheckBox">
+                                        <property name="name">
+                                            <cstring>cNotifyAutoEncrypt</cstring>
+                                        </property>
+                                        <property name="text">
+                                            <string>Automatically enc&amp;rypted devices</string>
+                                        </property>
+                                        <property name="accel">
+                                            <string>Alt+R</string>
+                                        </property>
+                                    </widget>
+                                    <widget class="QCheckBox">
+                                        <property name="name">
+                                            <cstring>cNotifyAutoDecrypt</cstring>
+                                        </property>
+                                        <property name="text">
+                                            <string>Automatically decr&amp;ypted devices</string>
+                                        </property>
+                                        <property name="accel">
+                                            <string>Alt+Y</string>
+                                        </property>
+                                    </widget>
+                                </vbox>
+                            </widget>
+                            <spacer>
+                                <property name="name">
+                                    <cstring>spacer15_2</cstring>
+                                </property>
+                                <property name="orientation">
+                                    <enum>Vertical</enum>
+                                </property>
+                                <property name="sizeType">
+                                    <enum>Expanding</enum>
+                                </property>
+                                <property name="sizeHint">
+                                    <size>
+                                        <width>16</width>
+                                        <height>16</height>
                                     </size>
                                 </property>
                             </spacer>
@@ -703,6 +728,8 @@ To edit detailed options of the volume, double click on its name.</string>
     <tabstop>rGroupActions</tabstop>
     <tabstop>rStoreKWallet</tabstop>
     <tabstop>rStoreConfig</tabstop>
+    <tabstop>cNotifyAutoEncrypt</tabstop>
+    <tabstop>cNotifyAutoDecrypt</tabstop>
     <tabstop>listKnown</tabstop>
 </tabstops>
 <layoutdefaults spacing="6" margin="11"/>

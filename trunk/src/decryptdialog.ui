@@ -140,7 +140,7 @@
                         <enum>Plain</enum>
                     </property>
                     <property name="text">
-                        <string>P&amp;assword:</string>
+                        <string>&amp;Password:</string>
                     </property>
                     <property name="buddy" stdset="0">
                         <cstring>passwordEdit</cstring>
@@ -286,5 +286,10 @@
         <slot>setEnabled(bool)</slot>
     </connection>
 </connections>
+<tabstops>
+    <tabstop>passwordEdit</tabstop>
+    <tabstop>cStorePass</tabstop>
+    <tabstop>cAutoDecrypt</tabstop>
+</tabstops>
 <layoutdefaults spacing="6" margin="11"/>
 </UI>

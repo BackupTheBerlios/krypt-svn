@@ -776,8 +776,6 @@ void KryptDevice::slotClosedConfDialog()
 
 void KryptDevice::slotKWalletReady ( bool isReady )
 {
-  printf ( "KWalletIsReady: %d; Save: %d; in %s\n", isReady, _saveToKWallet, _udi.ascii() );
-
   KWallet::Wallet *w = 0;
 
   if ( isReady )

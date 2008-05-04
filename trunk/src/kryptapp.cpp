@@ -395,8 +395,8 @@ void KryptApp::loadConfig()
 
   _notifyAutoEncrypt = _cfg.readBoolEntry ( KRYPT_CONF_NOTIFY_AUTO_ENCRYPT, true );
   _notifyAutoDecrypt = _cfg.readBoolEntry ( KRYPT_CONF_NOTIFY_AUTO_DECRYPT, true );
-  _notifyManualEncrypt = _cfg.readBoolEntry ( KRYPT_CONF_NOTIFY_MANUAL_ENCRYPT, true );
-  _notifyManualDecrypt = _cfg.readBoolEntry ( KRYPT_CONF_NOTIFY_MANUAL_DECRYPT, true );
+  _notifyManualEncrypt = _cfg.readBoolEntry ( KRYPT_CONF_NOTIFY_MANUAL_ENCRYPT, false );
+  _notifyManualDecrypt = _cfg.readBoolEntry ( KRYPT_CONF_NOTIFY_MANUAL_DECRYPT, false );
 
   _useKWallet = _cfg.readBoolEntry ( KRYPT_CONF_USE_KWALLET, true );
 

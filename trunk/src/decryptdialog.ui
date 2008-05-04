@@ -92,8 +92,8 @@
                             </property>
                             <property name="sizeHint">
                                 <size>
-                                    <width>31</width>
-                                    <height>41</height>
+                                    <width>0</width>
+                                    <height>0</height>
                                 </size>
                             </property>
                         </spacer>
@@ -187,8 +187,8 @@
                     </property>
                     <property name="sizeHint">
                         <size>
-                            <width>134</width>
-                            <height>16</height>
+                            <width>0</width>
+                            <height>0</height>
                         </size>
                     </property>
                 </spacer>
@@ -215,8 +215,8 @@
                     </property>
                     <property name="sizeHint">
                         <size>
-                            <width>16</width>
-                            <height>16</height>
+                            <width>0</width>
+                            <height>0</height>
                         </size>
                     </property>
                 </spacer>

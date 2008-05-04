@@ -54,8 +54,8 @@
                         </property>
                         <property name="sizeHint">
                             <size>
-                                <width>16</width>
-                                <height>16</height>
+                                <width>0</width>
+                                <height>0</height>
                             </size>
                         </property>
                     </spacer>
@@ -79,8 +79,8 @@
                                 </property>
                                 <property name="sizeHint">
                                     <size>
-                                        <width>16</width>
-                                        <height>16</height>
+                                        <width>0</width>
+                                        <height>0</height>
                                     </size>
                                 </property>
                             </spacer>
@@ -112,8 +112,8 @@
                                                 </property>
                                                 <property name="sizeHint">
                                                     <size>
-                                                        <width>16</width>
-                                                        <height>20</height>
+                                                        <width>0</width>
+                                                        <height>0</height>
                                                     </size>
                                                 </property>
                                             </spacer>
@@ -197,8 +197,8 @@
                                                 </property>
                                                 <property name="sizeHint">
                                                     <size>
-                                                        <width>16</width>
-                                                        <height>20</height>
+                                                        <width>0</width>
+                                                        <height>0</height>
                                                     </size>
                                                 </property>
                                             </spacer>
@@ -216,8 +216,8 @@
                                         </property>
                                         <property name="sizeHint">
                                             <size>
-                                                <width>16</width>
-                                                <height>16</height>
+                                                <width>0</width>
+                                                <height>0</height>
                                             </size>
                                         </property>
                                     </spacer>
@@ -284,8 +284,8 @@ encrypted volume is detected</string>
                                 </property>
                                 <property name="sizeHint">
                                     <size>
-                                        <width>16</width>
-                                        <height>16</height>
+                                        <width>0</width>
+                                        <height>0</height>
                                     </size>
                                 </property>
                             </spacer>
@@ -384,8 +384,8 @@ encrypted volume is detected</string>
                                 </property>
                                 <property name="sizeHint">
                                     <size>
-                                        <width>16</width>
-                                        <height>16</height>
+                                        <width>0</width>
+                                        <height>0</height>
                                     </size>
                                 </property>
                             </spacer>
@@ -464,8 +464,8 @@ encrypted volume is detected</string>
                                 </property>
                                 <property name="sizeHint">
                                     <size>
-                                        <width>16</width>
-                                        <height>16</height>
+                                        <width>0</width>
+                                        <height>0</height>
                                     </size>
                                 </property>
                             </spacer>
@@ -538,8 +538,8 @@ encrypted volume is detected</string>
                                 </property>
                                 <property name="sizeHint">
                                     <size>
-                                        <width>16</width>
-                                        <height>16</height>
+                                        <width>0</width>
+                                        <height>0</height>
                                     </size>
                                 </property>
                             </spacer>
@@ -557,8 +557,8 @@ encrypted volume is detected</string>
                         </property>
                         <property name="sizeHint">
                             <size>
-                                <width>16</width>
-                                <height>16</height>
+                                <width>0</width>
+                                <height>0</height>
                             </size>
                         </property>
                     </spacer>
@@ -587,8 +587,8 @@ encrypted volume is detected</string>
                         </property>
                         <property name="sizeHint">
                             <size>
-                                <width>51</width>
-                                <height>21</height>
+                                <width>0</width>
+                                <height>0</height>
                             </size>
                         </property>
                     </spacer>
@@ -612,8 +612,8 @@ encrypted volume is detected</string>
                                 </property>
                                 <property name="sizeHint">
                                     <size>
-                                        <width>20</width>
-                                        <height>16</height>
+                                        <width>0</width>
+                                        <height>0</height>
                                     </size>
                                 </property>
                             </spacer>
@@ -705,8 +705,8 @@ To edit detailed options of the volume, double click on its name.</string>
                                 </property>
                                 <property name="sizeHint">
                                     <size>
-                                        <width>20</width>
-                                        <height>16</height>
+                                        <width>0</width>
+                                        <height>0</height>
                                     </size>
                                 </property>
                             </spacer>
@@ -724,8 +724,8 @@ To edit detailed options of the volume, double click on its name.</string>
                         </property>
                         <property name="sizeHint">
                             <size>
-                                <width>51</width>
-                                <height>21</height>
+                                <width>0</width>
+                                <height>0</height>
                             </size>
                         </property>
                     </spacer>

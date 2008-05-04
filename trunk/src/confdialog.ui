@@ -442,7 +442,7 @@ encrypted volume is detected</string>
                                                     <bool>true</bool>
                                                 </property>
                                                 <property name="text">
-                                                    <string>Store passwords in &amp;config file (UNENCRYPTED!)</string>
+                                                    <string>Store passwords in &amp;config file (Unencrypted)</string>
                                                 </property>
                                                 <property name="accel">
                                                     <string>Alt+C</string>

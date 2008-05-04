@@ -27,7 +27,7 @@ krypt_SOURCES = confdialog.ui decryptdialog.ui devconfdialog.ui halbackend.cpp \
 	kryptapp.cpp kryptconf.cpp kryptdevconf.cpp kryptdevice.cpp kryptdevitem.cpp \
 	kryptdialog.cpp kryptsystray.cpp main.cpp
 krypt_LDFLAGS = $(KDE_RPATH) $(all_libraries)
-krypt_LDADD = $(DBUS_LIBS) -ldbus-qt-1 $(HAL_LIBS) $(LIB_KDEUI)
+krypt_LDADD = -lkwalletclient $(DBUS_LIBS) $(HAL_LIBS) $(LIB_KDEUI) -ldbus-qt-1
 
 # this is where the desktop file will go
 shelldesktopdir   = $(kde_appsdir)/Utilities

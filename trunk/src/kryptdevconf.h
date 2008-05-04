@@ -22,6 +22,7 @@
 #define _KRYPT_DEV_CONF_H_
 
 #include <kdialogbase.h>
+#include <kiconloader.h>
 
 #include "devconfdialog.h"
 #include "kryptdevice.h"

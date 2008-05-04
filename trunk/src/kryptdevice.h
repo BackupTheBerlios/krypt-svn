@@ -112,6 +112,7 @@ public slots:
   void slotPassError ( const QString &udi, const QString &errorName, const QString &errorMsg );
   void slotLoadConfig();
   void slotSaveConfig();
+  void slotKWalletReady ( bool isReady );
 
   void slotClickMount();
   void slotClickUMount();
@@ -153,6 +154,10 @@ private:
   bool _notifyEncrypt;
   bool _notifyDecrypt;
 
+  bool _saveToKWallet;
+  bool _waitingToAutoDecrypt;
+  bool _isInit;
+
   bool _globShowMount;
   bool _globShowUMount;
   bool _globShowEncrypt;
@@ -188,7 +193,7 @@ private:
   QStringList obfuscate ( const QString & str );
   QString deobfuscate ( const QStringList & list );
 
-  void showTrayMessage ( const QString & msg );
+  void showTrayMessage ( const QString & msg, const QPixmap & pixmap = QPixmap() );
 };
 
 #endif // _KRYPT_DEVICE_H_

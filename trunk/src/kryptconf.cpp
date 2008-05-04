@@ -27,13 +27,15 @@
 
 #include "kryptdevitem.h"
 #include "kryptglobal.h"
+#include "kryptapp.h"
 #include "kryptconf.h"
 #include "kryptconf.moc"
 
-KryptConf::KryptConf ( KConfig *cfg, QValueList<KryptDevice*> devices ) :
+KryptConf::KryptConf ( KryptApp *kryptApp, QValueList<KryptDevice*> devices ) :
     KDialogBase ( 0, "Conf", true, "Configure Krypt", Ok | Cancel, Ok, false )
-    , _dlg ( 0 ), _cfg ( cfg ), _devices ( devices ), _isLeaving ( false )
+    , _kryptApp ( kryptApp ), _dlg ( 0 ), _cfg ( 0 ), _devices ( devices ), _isLeaving ( false )
 {
+  _cfg = _kryptApp->getConfig();
   _dlg = new ConfDialog ( this );
 
   connect ( this, SIGNAL ( cancelClicked() ),
@@ -142,6 +144,8 @@ void KryptConf::slotDoubleClicked ( QListViewItem *item, const QPoint &, int col
 
 void KryptConf::slotOk()
 {
+  bool checkKWallet = false;
+
   if ( !_dlg->rStoreKWallet->isChecked() )
   {
     // Warning. We want to transfer all plaintext passwords from configuration file
@@ -149,19 +153,21 @@ void KryptConf::slotOk()
     // way. So it is impossible to dump passwords stored in the wallet into the configuration
     // file.
     int ret = KMessageBox::messageBox ( this, KMessageBox::WarningContinueCancel,
-                                        i18n ( "You have enabled storing unencrypted passwords in configuration file, which is unsafe!\n"
-                                               "You are strongly encouraged to use KDE Wallet for storing passwords.\n"
-                                               "Also, if there are any volume passwords stored in KDE Wallet, they will not be transfered"
-                                               "to the configuration file - you will have to enter them again.\n" ),
+                                        i18n ( "You have enabled storing UNENCRYPTED passwords "
+                                               "in configuration file, which is unsafe!\n"
+                                               "You are strongly encouraged to use KDE Wallet "
+                                               "for storing passwords.\n"
+                                               "Also, if there are any volume passwords stored "
+                                               "in KDE Wallet, they will not be transfered"
+                                               "to the configuration file - you will have to "
+                                               "enter them again.\n" ),
                                         QString::null, KStdGuiItem::cont() );
 
     if ( ret != KMessageBox::Continue ) return;
   }
   else
   {
-    // Transfer password for each known device from the config file to the wallet
-    // TODO
-    // Try to open the wallet once, here!
+    checkKWallet = true;
   }
 
   _cfg->setGroup ( KRYPT_CONF_GLOBAL_GROUP );
@@ -206,6 +212,8 @@ void KryptConf::slotOk()
   emit signalConfigChanged();
 
   _cfg->sync();
+
+  if ( checkKWallet ) _kryptApp->checkKWallet();
 
   emit signalClosed();
 }

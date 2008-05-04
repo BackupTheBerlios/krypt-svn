@@ -33,9 +33,10 @@
 
 KryptApp::KryptApp() : _cfg ( "kryptrc" )
 {
-  checkConfig();
-
   _confDlg = 0;
+  _kwallet = 0;
+
+  checkConfig();
 
   _tray = new KryptSystemTray ( this, 0L, "KryptSysTray" );
 
@@ -186,6 +187,9 @@ KryptDevice * KryptApp::getDevice ( const QString &udi, bool create )
 
     connect ( this, SIGNAL ( signalConfigChanged() ),
               nDev, SLOT ( slotLoadConfig() ) );
+
+    connect ( this, SIGNAL ( signalKWalletReady ( bool ) ),
+              nDev, SLOT ( slotKWalletReady ( bool ) ) );
   }
 
   if ( _udi2Dev.contains ( udi ) )
@@ -226,7 +230,7 @@ void KryptApp::slotShowConfig()
 
   createAllKnownDevices();
 
-  _confDlg = new KryptConf ( &_cfg, getDevices() );
+  _confDlg = new KryptConf ( this, getDevices() );
 
   connect ( _confDlg, SIGNAL ( signalConfigChanged() ),
             this, SLOT ( slotConfigChanged() ) );
@@ -300,4 +304,58 @@ void KryptApp::checkConfig()
 KryptSystemTray *KryptApp::getKryptTray()
 {
   return _tray;
+}
+
+void KryptApp::slotWalletOpened ( bool success )
+{
+  if ( !success || !_kwallet || !_kwallet->isOpen() )
+  {
+    if ( _kwallet != 0 )
+    {
+      delete _kwallet;
+      _kwallet = 0;
+    }
+
+    emit signalKWalletReady ( false );
+
+    return;
+  }
+
+  if ( !_kwallet->hasFolder ( KRYPT_KWALLET_FOLDER ) )
+  {
+    if ( !_kwallet->createFolder ( KRYPT_KWALLET_FOLDER ) )
+    {
+      delete _kwallet;
+      _kwallet = 0;
+
+      emit signalKWalletReady ( false );
+      return;
+    }
+  }
+
+  emit signalKWalletReady ( true );
+}
+
+void KryptApp::checkKWallet()
+{
+  if ( !_kwallet || !_kwallet->isOpen() )
+  {
+    if ( _kwallet != 0 )
+    {
+      delete _kwallet;
+      _kwallet = 0;
+    }
+
+    _kwallet = KWallet::Wallet::openWallet ( KWallet::Wallet::LocalWallet(), 0, KWallet::Wallet::Asynchronous );
+
+    connect ( _kwallet, SIGNAL ( walletOpened ( bool ) ), this, SLOT ( slotWalletOpened ( bool ) ) );
+    return;
+  }
+
+  slotWalletOpened ( true );
+}
+
+KWallet::Wallet *KryptApp::getKWallet()
+{
+  return _kwallet;
 }

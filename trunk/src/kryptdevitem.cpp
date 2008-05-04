@@ -61,7 +61,8 @@ void KryptDevItem::toggleIgnored()
 
   if ( _ignored )
   {
-    setPixmap ( KRYPT_DEV_ITEM_COL_IGNORED, KGlobal::iconLoader()->loadIcon ( "button_cancel", KIcon::NoGroup, KIcon::SizeSmall ) );
+    //setPixmap ( KRYPT_DEV_ITEM_COL_IGNORED, KGlobal::iconLoader()->loadIcon ( "button_cancel", KIcon::NoGroup, KIcon::SizeSmall ) );
+    setPixmap ( KRYPT_DEV_ITEM_COL_IGNORED, UserIcon ( "ignore" ) );
   }
   else
   {

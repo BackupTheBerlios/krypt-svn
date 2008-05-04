@@ -28,6 +28,7 @@
 #include <qmap.h>
 #include <kconfig.h>
 #include <kuniqueapplication.h>
+#include <kwallet.h>
 
 #include "kryptdevice.h"
 
@@ -51,9 +52,12 @@ public:
   KConfig * getConfig();
   QString getHalDevEventDesc ( int eventID ) const;
   KryptSystemTray *getKryptTray();
+  void checkKWallet();
+  KWallet::Wallet *getKWallet();
 
 signals:
   void signalConfigChanged();
+  void signalKWalletReady ( bool isReady );
 
 protected slots:
   void slotHALEvent ( int eventID, const QString &udi );
@@ -62,9 +66,11 @@ protected slots:
   void slotNewInfo ( const QString &info );
   void slotShowConfig();
   void slotConfigChanged();
+  void slotWalletOpened ( bool success );
 
 protected:
   KConfig _cfg;
+  KWallet::Wallet *_kwallet;
   KryptConf *_confDlg;
   KryptSystemTray *_tray;
   QMap<QString, KryptDevice*> _udi2Dev;

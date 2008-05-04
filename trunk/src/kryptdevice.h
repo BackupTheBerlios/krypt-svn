@@ -104,6 +104,8 @@ public:
   QString getPassword();
   void setPassword ( const QString &pass );
 
+  void checkKWallet();
+
 signals:
   void signalConfigChanged();
 
@@ -150,25 +152,14 @@ private:
   bool _isMounted;
   bool _isIgnored;
 
-  bool _encryptOnUmount;
-  bool _notifyEncrypt;
-  bool _notifyDecrypt;
+  bool _manualEncrypt;
+  bool _manualEncryptOfMounted;
+  bool _manualDecrypt;
 
   bool _saveToKWallet;
-  bool _waitingToAutoDecrypt;
-  bool _isInit;
+  bool _waitingToDecrypt;
 
-  bool _globShowMount;
-  bool _globShowUMount;
-  bool _globShowEncrypt;
-  bool _globShowDecrypt;
-  bool _globShowOptions;
-  bool _globAutoEncrypt;
-  bool _globAutoDecrypt;
-  bool _globNotifyAutoEncrypt;
-  bool _globNotifyAutoDecrypt;
-  bool _globShowPopup;
-  bool _globPassInKWallet;
+  bool _isInit;
 
   OptionType _showMount;
   OptionType _showUMount;
@@ -184,11 +175,12 @@ private:
   void updateDeviceInfo();
   OptionType loadOption ( const char *opt );
   void saveOption ( const char *opt, OptionType optVal );
-  void popupPassDialog();
   void recreateCUdi();
   void checkNewDevice();
-  void loadGlobalOptions();
-  void createPassDialog();
+  void showPassDialog();
+
+  void doEncrypt();
+  void doUMount();
 
   QStringList obfuscate ( const QString & str );
   QString deobfuscate ( const QStringList & list );

@@ -48,21 +48,23 @@ KryptConf::KryptConf ( KryptApp *kryptApp, QValueList<KryptDevice*> devices ) :
 
   _cfg->setGroup ( KRYPT_CONF_GLOBAL_GROUP );
 
-  _dlg->cMount->setChecked ( _cfg->readBoolEntry ( KRYPT_CONF_SHOW_MOUNT, true ) );
-  _dlg->cUmount->setChecked ( _cfg->readBoolEntry ( KRYPT_CONF_SHOW_UMOUNT, true ) );
-  _dlg->cEncrypt->setChecked ( _cfg->readBoolEntry ( KRYPT_CONF_SHOW_ENCRYPT, true ) );
-  _dlg->cDecrypt->setChecked ( _cfg->readBoolEntry ( KRYPT_CONF_SHOW_DECRYPT, true ) );
-  _dlg->cOptions->setChecked ( _cfg->readBoolEntry ( KRYPT_CONF_SHOW_OPTIONS, true ) );
+  _dlg->cMount->setChecked ( _kryptApp->showMount() );
+  _dlg->cUmount->setChecked ( _kryptApp->showUMount() );
+  _dlg->cEncrypt->setChecked ( _kryptApp->showEncrypt() );
+  _dlg->cDecrypt->setChecked ( _kryptApp->showDecrypt() );
+  _dlg->cOptions->setChecked ( _kryptApp->showOptions() );
 
-  _dlg->cAutoEncrypt->setChecked ( _cfg->readBoolEntry ( KRYPT_CONF_AUTO_ENCRYPT, true ) );
-  _dlg->cAutoDecrypt->setChecked ( _cfg->readBoolEntry ( KRYPT_CONF_AUTO_DECRYPT, false ) );
+  _dlg->cPopUp->setChecked ( _kryptApp->showPopup() );
 
-  _dlg->cNotifyAutoEncrypt->setChecked ( _cfg->readBoolEntry ( KRYPT_CONF_NOTIFY_AUTO_ENCRYPT, true ) );
-  _dlg->cNotifyAutoDecrypt->setChecked ( _cfg->readBoolEntry ( KRYPT_CONF_NOTIFY_AUTO_DECRYPT, true ) );
+  _dlg->cAutoEncrypt->setChecked ( _kryptApp->autoEncrypt() );
+  _dlg->cAutoDecrypt->setChecked ( _kryptApp->autoDecrypt() );
 
-  _dlg->cPopUp->setChecked ( _cfg->readBoolEntry ( KRYPT_CONF_SHOW_POPUP, true ) );
+  _dlg->cNotifyAutoEncrypt->setChecked ( _kryptApp->notifyAutoEncrypt() );
+  _dlg->cNotifyAutoDecrypt->setChecked ( _kryptApp->notifyAutoDecrypt() );
+  _dlg->cNotifyManualEncrypt->setChecked ( _kryptApp->notifyManualEncrypt() );
+  _dlg->cNotifyManualDecrypt->setChecked ( _kryptApp->notifyManualDecrypt() );
 
-  if ( _cfg->readBoolEntry ( KRYPT_CONF_GROUP_BY_CAT, false ) )
+  if ( _kryptApp->groupByCategory() )
   {
     _dlg->rGroupActions->setChecked ( true );
   }
@@ -71,7 +73,7 @@ KryptConf::KryptConf ( KryptApp *kryptApp, QValueList<KryptDevice*> devices ) :
     _dlg->rGroupDevices->setChecked ( true );
   }
 
-  if ( _cfg->readBoolEntry ( KRYPT_CONF_FLAT_MENU, false ) )
+  if ( _kryptApp->flatMenu() )
   {
     _dlg->rFlat->setChecked ( true );
   }
@@ -80,7 +82,7 @@ KryptConf::KryptConf ( KryptApp *kryptApp, QValueList<KryptDevice*> devices ) :
     _dlg->rDropDown->setChecked ( true );
   }
 
-  if ( _cfg->readBoolEntry ( KRYPT_CONF_PASS_IN_WALLET, true ) )
+  if ( _kryptApp->useKWallet() )
   {
     _dlg->rStoreKWallet->setChecked ( true );
   }
@@ -144,8 +146,6 @@ void KryptConf::slotDoubleClicked ( QListViewItem *item, const QPoint &, int col
 
 void KryptConf::slotOk()
 {
-  bool checkKWallet = false;
-
   if ( !_dlg->rStoreKWallet->isChecked() )
   {
     // Warning. We want to transfer all plaintext passwords from configuration file
@@ -153,8 +153,8 @@ void KryptConf::slotOk()
     // way. So it is impossible to dump passwords stored in the wallet into the configuration
     // file.
     int ret = KMessageBox::messageBox ( this, KMessageBox::WarningContinueCancel,
-                                        i18n ( "You have enabled storing UNENCRYPTED passwords "
-                                               "in configuration file, which is unsafe!\n"
+                                        i18n ( "Storing UNENCRYPTED passwords "
+                                               "in configuration file is unsafe!\n"
                                                "You are strongly encouraged to use KDE Wallet "
                                                "for storing passwords.\n"
                                                "Also, if there are any volume passwords stored "
@@ -164,10 +164,6 @@ void KryptConf::slotOk()
                                         QString::null, KStdGuiItem::cont() );
 
     if ( ret != KMessageBox::Continue ) return;
-  }
-  else
-  {
-    checkKWallet = true;
   }
 
   _cfg->setGroup ( KRYPT_CONF_GLOBAL_GROUP );
@@ -183,17 +179,20 @@ void KryptConf::slotOk()
 
   _cfg->writeEntry ( KRYPT_CONF_NOTIFY_AUTO_ENCRYPT, _dlg->cNotifyAutoEncrypt->isChecked() );
   _cfg->writeEntry ( KRYPT_CONF_NOTIFY_AUTO_DECRYPT, _dlg->cNotifyAutoDecrypt->isChecked() );
+  _cfg->writeEntry ( KRYPT_CONF_NOTIFY_MANUAL_ENCRYPT, _dlg->cNotifyManualEncrypt->isChecked() );
+  _cfg->writeEntry ( KRYPT_CONF_NOTIFY_MANUAL_DECRYPT, _dlg->cNotifyManualDecrypt->isChecked() );
 
   _cfg->writeEntry ( KRYPT_CONF_SHOW_POPUP, _dlg->cPopUp->isChecked() );
 
   _cfg->writeEntry ( KRYPT_CONF_GROUP_BY_CAT, _dlg->rGroupActions->isChecked() );
   _cfg->writeEntry ( KRYPT_CONF_FLAT_MENU, _dlg->rFlat->isChecked() );
 
-  _cfg->writeEntry ( KRYPT_CONF_PASS_IN_WALLET, _dlg->rStoreKWallet->isChecked() );
+  _cfg->writeEntry ( KRYPT_CONF_USE_KWALLET, _dlg->rStoreKWallet->isChecked() );
 
   // So we don't update item list in slotRegenerateDeviceList
   _isLeaving = true;
 
+  // Lets make devices set their new ignore status (no matter if it changed or not)
   QListViewItem * item = _dlg->listKnown->firstChild();
 
   while ( item != 0 )
@@ -209,11 +208,10 @@ void KryptConf::slotOk()
 
   hide();
 
-  emit signalConfigChanged();
-
   _cfg->sync();
 
-  if ( checkKWallet ) _kryptApp->checkKWallet();
+  // Everything should update the configuration
+  emit signalConfigChanged();
 
   emit signalClosed();
 }

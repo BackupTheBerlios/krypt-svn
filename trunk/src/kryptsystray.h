@@ -23,7 +23,6 @@
 
 #include <qstringlist.h>
 #include <ksystemtray.h>
-#include <kconfig.h>
 
 #include "kryptdevice.h"
 
@@ -46,9 +45,6 @@ public:
 signals:
   void signalClickConfig();
 
-public slots:
-  void slotLoadConfig();
-
 protected:
   void mousePressEvent ( QMouseEvent *e );
 
@@ -63,11 +59,6 @@ private:
   KHelpMenu *_helpMenu;
 
   QMap<KryptDevice*, KPopupMenu*> _devMenus;
-
-  bool _groupByCategory;
-  bool _flatMenu;
-
-  KConfig* _cfg;
 
   void recreateMenu ( KPopupMenu* menu, bool full );
   void removeUnneeded ( QValueList<KryptDevice*> & devices );

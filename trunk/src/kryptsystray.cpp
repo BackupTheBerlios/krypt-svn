@@ -36,11 +36,6 @@
 KryptSystemTray::KryptSystemTray ( KryptApp *kryptApp, QWidget* parent, const char *name )
     : KSystemTray ( parent, name ), _kryptApp ( kryptApp )
 {
-  _cfg = kryptApp->getConfig();
-
-  _groupByCategory = false;
-  _flatMenu = false;
-
   _mountMenu = new KPopupMenu ( this->contextMenu (), "mountmenu" );
   _umountMenu = new KPopupMenu ( this->contextMenu (), "umountmenu" );
   _encryptMenu = new KPopupMenu ( this->contextMenu (), "encryptmenu" );
@@ -57,8 +52,6 @@ KryptSystemTray::KryptSystemTray ( KryptApp *kryptApp, QWidget* parent, const ch
   _helpMenu->menu ()->removeItemAt ( KHelpMenu::menuHelpContents );
   /* once the help menu is gone, remove the separator which is at position KHelpMenu::menuHelpContents now */
   _helpMenu->menu ()->removeItemAt ( KHelpMenu::menuHelpContents );
-
-  slotLoadConfig();
 
   setPixmap ( KSystemTray::loadIcon ( "krypt" ) );
   setAlignment ( Qt::AlignHCenter | Qt::AlignVCenter );
@@ -113,7 +106,7 @@ void KryptSystemTray::removeUnneeded ( QValueList<KryptDevice*> & devices )
 
     // Menu entry for this device is not needed...
 
-    if ( _flatMenu || _groupByCategory || !dev->isPresent() || dev->isIgnored() )
+    if ( _kryptApp->flatMenu() || _kryptApp->groupByCategory() || !dev->isPresent() || dev->isIgnored() )
     {
       // ... but it exists
       if ( _devMenus.contains ( dev ) )
@@ -154,7 +147,7 @@ int KryptSystemTray::createCategoryEntries ( KPopupMenu* menu, const QValueList<
 
     if ( dev->showUMount() && dev->isMounted() )
     {
-      if ( _flatMenu )
+      if ( _kryptApp->flatMenu() )
       {
         if ( !added )
         {
@@ -189,7 +182,7 @@ int KryptSystemTray::createCategoryEntries ( KPopupMenu* menu, const QValueList<
 
     if ( dev->showMount() && !dev->isMounted() && dev->isDecrypted() )
     {
-      if ( _flatMenu )
+      if ( _kryptApp->flatMenu() )
       {
         if ( !added )
         {
@@ -224,7 +217,7 @@ int KryptSystemTray::createCategoryEntries ( KPopupMenu* menu, const QValueList<
 
     if ( dev->showEncrypt() && dev->isDecrypted() )
     {
-      if ( _flatMenu )
+      if ( _kryptApp->flatMenu() )
       {
         if ( !added )
         {
@@ -259,7 +252,7 @@ int KryptSystemTray::createCategoryEntries ( KPopupMenu* menu, const QValueList<
 
     if ( dev->showDecrypt() && !dev->isDecrypted() )
     {
-      if ( _flatMenu )
+      if ( _kryptApp->flatMenu() )
       {
         if ( !added )
         {
@@ -296,7 +289,7 @@ int KryptSystemTray::createCategoryEntries ( KPopupMenu* menu, const QValueList<
 
       if ( dev->showOptions() )
       {
-        if ( _flatMenu )
+        if ( _kryptApp->flatMenu() )
         {
           if ( !added )
           {
@@ -353,7 +346,7 @@ int KryptSystemTray::createDevEntries ( KPopupMenu* menu, const QValueList<Krypt
 
     if ( dev->showUMount() && dev->isMounted() )
     {
-      if ( _flatMenu )
+      if ( _kryptApp->flatMenu() )
       {
         if ( !added )
         {
@@ -381,7 +374,7 @@ int KryptSystemTray::createDevEntries ( KPopupMenu* menu, const QValueList<Krypt
     // MOUNT
     if ( dev->showMount() && !dev->isMounted() && dev->isDecrypted() )
     {
-      if ( _flatMenu )
+      if ( _kryptApp->flatMenu() )
       {
         if ( !added )
         {
@@ -409,7 +402,7 @@ int KryptSystemTray::createDevEntries ( KPopupMenu* menu, const QValueList<Krypt
     // ENCRYPT
     if ( dev->showEncrypt() && dev->isDecrypted() )
     {
-      if ( _flatMenu )
+      if ( _kryptApp->flatMenu() )
       {
         if ( !added )
         {
@@ -437,7 +430,7 @@ int KryptSystemTray::createDevEntries ( KPopupMenu* menu, const QValueList<Krypt
     // DECRYPT
     if ( dev->showDecrypt() && !dev->isDecrypted() )
     {
-      if ( _flatMenu )
+      if ( _kryptApp->flatMenu() )
       {
         if ( !added )
         {
@@ -465,7 +458,7 @@ int KryptSystemTray::createDevEntries ( KPopupMenu* menu, const QValueList<Krypt
     // OPTIONS
     if ( full && dev->showOptions() )
     {
-      if ( _flatMenu )
+      if ( _kryptApp->flatMenu() )
       {
         if ( !added )
         {
@@ -507,7 +500,7 @@ void KryptSystemTray::recreateMenu ( KPopupMenu* menu, bool full )
   // and delete their KPopupMenu objects.
   removeUnneeded ( devices );
 
-  if ( _groupByCategory )
+  if ( _kryptApp->groupByCategory() )
   {
     lastIndex = createCategoryEntries ( menu, devices, full );
   }
@@ -543,12 +536,4 @@ void KryptSystemTray::recreateMenu ( KPopupMenu* menu, bool full )
 void KryptSystemTray::contextMenuAboutToShow ( KPopupMenu* menu )
 {
   recreateMenu ( menu, true );
-}
-
-void KryptSystemTray::slotLoadConfig()
-{
-  _cfg->setGroup ( KRYPT_CONF_GLOBAL_GROUP );
-
-  _groupByCategory = _cfg->readBoolEntry ( KRYPT_CONF_GROUP_BY_CAT, false );
-  _flatMenu = _cfg->readBoolEntry ( KRYPT_CONF_FLAT_MENU, false );
 }

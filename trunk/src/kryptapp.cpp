@@ -37,6 +37,7 @@ KryptApp::KryptApp() : _cfg ( "kryptrc" )
   _kwallet = 0;
 
   checkConfig();
+  loadConfig();
 
   _tray = new KryptSystemTray ( this, 0L, "KryptSysTray" );
 
@@ -60,9 +61,6 @@ KryptApp::KryptApp() : _cfg ( "kryptrc" )
 
   connect ( _tray, SIGNAL ( signalClickConfig() ),
             this, SLOT ( slotShowConfig() ) );
-
-  connect ( this, SIGNAL ( signalConfigChanged() ),
-            _tray, SLOT ( slotLoadConfig() ) );
 
   halBackend->initScan();
 }
@@ -235,6 +233,9 @@ void KryptApp::slotShowConfig()
   connect ( _confDlg, SIGNAL ( signalConfigChanged() ),
             this, SLOT ( slotConfigChanged() ) );
 
+  connect ( _confDlg, SIGNAL ( signalClosed() ),
+            this, SLOT ( slotConfigClosed() ) );
+
   _confDlg->show();
 
 }
@@ -260,44 +261,12 @@ void KryptApp::createAllKnownDevices()
   }
 }
 
-void KryptApp::slotConfigChanged()
+void KryptApp::slotConfigClosed()
 {
   if ( _confDlg )
   {
     _confDlg->deleteLater();
     _confDlg = 0;
-  }
-
-  emit signalConfigChanged();
-}
-
-void KryptApp::checkConfig()
-{
-  _cfg.setGroup ( KRYPT_CONF_GLOBAL_GROUP );
-
-  QString confVer = _cfg.readEntry ( KRYPT_CONF_VERSION, "0" );
-
-  bool doSync = false;
-
-  if ( confVer == "0" )
-  {
-    // Remove options from older version. Sorry ;)
-    _cfg.deleteGroup ( "app" );
-    _cfg.deleteGroup ( "device_desc" );
-    _cfg.deleteGroup ( "tray" );
-    _cfg.deleteGroup ( "devices" );
-    doSync = true;
-  }
-
-  if ( confVer != KRYPT_VERSION_STRING )
-  {
-    _cfg.writeEntry ( KRYPT_CONF_VERSION, KRYPT_VERSION_STRING );
-    doSync = true;
-  }
-
-  if ( doSync )
-  {
-    _cfg.sync();
   }
 }
 
@@ -338,6 +307,8 @@ void KryptApp::slotWalletOpened ( bool success )
 
 void KryptApp::checkKWallet()
 {
+  if ( !_useKWallet ) return;
+
   if ( !_kwallet || !_kwallet->isOpen() )
   {
     if ( _kwallet != 0 )
@@ -358,4 +329,152 @@ void KryptApp::checkKWallet()
 KWallet::Wallet *KryptApp::getKWallet()
 {
   return _kwallet;
+}
+
+void KryptApp::checkConfig()
+{
+  _cfg.setGroup ( KRYPT_CONF_GLOBAL_GROUP );
+
+  QString confVer = _cfg.readEntry ( KRYPT_CONF_VERSION, "0" );
+
+  bool doSync = false;
+
+  if ( confVer == "0" )
+  {
+    // Remove options from older version. Sorry ;)
+    _cfg.deleteGroup ( "app" );
+    _cfg.deleteGroup ( "device_desc" );
+    _cfg.deleteGroup ( "tray" );
+    _cfg.deleteGroup ( "devices" );
+    doSync = true;
+  }
+
+  if ( confVer != KRYPT_VERSION_STRING )
+  {
+    _cfg.writeEntry ( KRYPT_CONF_VERSION, KRYPT_VERSION_STRING );
+    doSync = true;
+  }
+
+  if ( doSync )
+  {
+    _cfg.sync();
+  }
+}
+
+void KryptApp::slotConfigChanged()
+{
+  bool oldUseKWallet = _useKWallet;
+
+  // We HAVE TO load global config BEFORE we signal that there have been some changes!
+  loadConfig();
+
+  emit signalConfigChanged();
+
+  // We just started using KDE Wallet!
+  // AFTER all devices updated their config, we want to try
+  // to open the wallet - so they can store their passwords in it!
+
+  if ( !oldUseKWallet && _useKWallet ) checkKWallet();
+}
+
+void KryptApp::loadConfig()
+{
+  _cfg.setGroup ( KRYPT_CONF_GLOBAL_GROUP );
+
+  // Defaults should be kept only in this file:
+  _showMount = _cfg.readBoolEntry ( KRYPT_CONF_SHOW_MOUNT, true );
+
+  _showUMount = _cfg.readBoolEntry ( KRYPT_CONF_SHOW_UMOUNT, true );
+  _showEncrypt = _cfg.readBoolEntry ( KRYPT_CONF_SHOW_ENCRYPT, true );
+  _showDecrypt = _cfg.readBoolEntry ( KRYPT_CONF_SHOW_DECRYPT, true );
+  _showOptions = _cfg.readBoolEntry ( KRYPT_CONF_SHOW_OPTIONS, true );
+  _showPopup = _cfg.readBoolEntry ( KRYPT_CONF_SHOW_POPUP, true );
+
+  _autoEncrypt = _cfg.readBoolEntry ( KRYPT_CONF_AUTO_ENCRYPT, true );
+  _autoDecrypt = _cfg.readBoolEntry ( KRYPT_CONF_AUTO_DECRYPT, false );
+
+  _notifyAutoEncrypt = _cfg.readBoolEntry ( KRYPT_CONF_NOTIFY_AUTO_ENCRYPT, true );
+  _notifyAutoDecrypt = _cfg.readBoolEntry ( KRYPT_CONF_NOTIFY_AUTO_DECRYPT, true );
+  _notifyManualEncrypt = _cfg.readBoolEntry ( KRYPT_CONF_NOTIFY_MANUAL_ENCRYPT, true );
+  _notifyManualDecrypt = _cfg.readBoolEntry ( KRYPT_CONF_NOTIFY_MANUAL_DECRYPT, true );
+
+  _useKWallet = _cfg.readBoolEntry ( KRYPT_CONF_USE_KWALLET, true );
+
+  _groupByCategory = _cfg.readBoolEntry ( KRYPT_CONF_GROUP_BY_CAT, false );
+  _flatMenu = _cfg.readBoolEntry ( KRYPT_CONF_FLAT_MENU, false );
+}
+
+bool KryptApp::showMount() const
+{
+  return _showMount;
+}
+
+bool KryptApp::showUMount() const
+{
+  return _showUMount;
+}
+
+bool KryptApp::showEncrypt() const
+{
+  return _showEncrypt;
+}
+
+bool KryptApp::showDecrypt() const
+{
+  return _showDecrypt;
+}
+
+bool KryptApp::showOptions() const
+{
+  return _showOptions;
+}
+
+bool KryptApp::showPopup() const
+{
+  return _showPopup;
+}
+
+bool KryptApp::autoEncrypt() const
+{
+  return _autoEncrypt;
+}
+
+bool KryptApp::autoDecrypt() const
+{
+  return _autoDecrypt;
+}
+
+bool KryptApp::notifyAutoEncrypt() const
+{
+  return _notifyAutoEncrypt;
+}
+
+bool KryptApp::notifyAutoDecrypt() const
+{
+  return _notifyAutoDecrypt;
+}
+
+bool KryptApp::notifyManualEncrypt() const
+{
+  return _notifyManualEncrypt;
+}
+
+bool KryptApp::notifyManualDecrypt() const
+{
+  return _notifyManualDecrypt;
+}
+
+bool KryptApp::useKWallet() const
+{
+  return _useKWallet;
+}
+
+bool KryptApp::groupByCategory() const
+{
+  return _groupByCategory;
+}
+
+bool KryptApp::flatMenu() const
+{
+  return _flatMenu;
 }

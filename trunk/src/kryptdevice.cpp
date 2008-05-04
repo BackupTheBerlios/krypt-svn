@@ -18,310 +18,50 @@
  *   51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.           *
  ***************************************************************************/
 
+#include <qpixmap.h>
+
 #include <kconfig.h>
 #include <kdebug.h>
-#include <kpassivepopup.h>
 #include <kwallet.h>
+#include <klocale.h>
+#include <kiconloader.h>
 
-#include <qpixmap.h>
-#include <qlayout.h>
-#include <qvbox.h>
-#include <qhbox.h>
-
-#include "kryptglobal.h"
 #include "halbackend.h"
-#include "kryptsystray.h"
 #include "kryptapp.h"
+#include "kryptglobal.h"
 #include "kryptdialog.h"
 #include "kryptdevconf.h"
 #include "kryptdevice.h"
 #include "kryptdevice.moc"
 
-// Lets choose 'exotic' base :)
-#define OBFUSCATE_BASE 35
-
-int KryptDevice::_lastDevID = 0;
-
 KryptDevice::KryptDevice ( KryptApp *kryptApp, const QString & udi ) :
     _kryptApp ( kryptApp ), _udi ( udi )
 {
-  _isInit = true;
+  _passDialog = 0;
+  _confDialog = 0;
+  _cUdi = 0;
 
   _devID = ++_lastDevID;
   _halBackend = HALBackend::get();
   _cfg = kryptApp->getConfig();
-  _passDialog = 0;
-  _confDialog = 0;
-  _cUdi = 0;
 
   _isPresent = false;
   _isDecrypted = false;
   _isMounted = false;
   _isIgnored = false;
 
-  _globShowMount = true;
-  _globShowUMount = true;
-  _globShowEncrypt = true;
-  _globShowDecrypt = true;
-  _globShowOptions = true;
-  _globAutoEncrypt = true;
-  _globAutoDecrypt = false;
-  _globNotifyAutoEncrypt = true;
-  _globNotifyAutoDecrypt = true;
-  _globShowPopup = true;
-  _globPassInKWallet = true;
+  _manualDecrypt = false;
+  _manualEncrypt = false;
+  _manualEncryptOfMounted = false;
 
-  _encryptOnUmount = false;
   _saveToKWallet = false;
-  _waitingToAutoDecrypt = false;
-  _notifyEncrypt = false;
-  _notifyDecrypt = false;
+  _waitingToDecrypt = false;
 
   _storePass = false;
 
   _password = "";
 
   slotLoadConfig();
-
-  _isInit = false;
-}
-
-KryptDevice::~KryptDevice()
-{
-  if ( _passDialog != 0 )
-  {
-    delete _passDialog;
-    _passDialog = 0;
-  }
-
-  if ( _cUdi != 0 )
-  {
-    delete[] _cUdi;
-    _cUdi = 0;
-  }
-
-  if ( _confDialog != 0 )
-  {
-    delete _confDialog;
-    _confDialog = 0;
-  }
-}
-
-void KryptDevice::recreateCUdi()
-{
-  if ( _cUdi != 0 )
-  {
-    delete[] _cUdi;
-    _cUdi = 0;
-  }
-
-  _cUdi = new char[_udi.length() + 1];
-
-  memcpy ( _cUdi, _udi.ascii(), _udi.length() + 1 );
-}
-
-int KryptDevice::getID() const
-{
-  return _devID;
-}
-
-const QString & KryptDevice::getUDI() const
-{
-  return _udi;
-}
-
-QString KryptDevice::getDesc( ) const
-{
-  return QString ( "%1 %2 (%3)" ).arg ( _vendor ).arg ( _product ).arg ( _blockDev );
-}
-
-QString KryptDevice::getName( ) const
-{
-  return QString ( "%1 %2" ).arg ( _vendor ).arg ( _product );
-}
-
-const QString & KryptDevice::getType() const
-{
-  return _type;
-}
-
-const QString & KryptDevice::getProduct() const
-{
-  return _product;
-}
-
-const QString & KryptDevice::getVendor() const
-{
-  return _vendor;
-}
-
-const QString & KryptDevice::getBlockDev() const
-{
-  return _blockDev;
-}
-
-QPixmap KryptDevice::getIcon ( KIcon::StdSizes size ) const
-{
-  QString deviceIcon;
-
-  if ( _type == "memory_stick"
-       || _type == "cdrom"
-       || _type == "sd_mmc"
-       || _type == "compact_flash"
-       || _type == "smart_media"
-       || _type == "zip" )
-  {
-
-    deviceIcon = QString ( "%1_unmount" ).arg ( _type );
-  }
-  else
-  {
-    deviceIcon = QString ( "hdd_unmount" );
-  }
-
-  return KGlobal::iconLoader()->loadIcon ( deviceIcon, KIcon::NoGroup, size );
-}
-
-QString KryptDevice::getConfigGroup ( const QString & forUdi )
-{
-  return QString ( KRYPT_CONF_UDI_PREFIX "%1" ).arg ( forUdi );
-}
-
-QString KryptDevice::getConfigGroup() const
-{
-  return getConfigGroup ( _udi );
-}
-
-bool KryptDevice::isDecrypted() const
-{
-  return _isDecrypted;
-}
-
-bool KryptDevice::isMounted() const
-{
-  return _isMounted;
-}
-
-bool KryptDevice::isIgnored() const
-{
-  return _isIgnored;
-}
-
-bool KryptDevice::isPresent() const
-{
-  return _isPresent;
-}
-
-bool KryptDevice::showMount() const
-{
-  if ( _showMount == KryptDevice::OptionOn ) return true;
-
-  if ( _showMount == KryptDevice::OptionOff ) return false;
-
-  return _globShowMount;
-}
-
-bool KryptDevice::showUMount() const
-{
-  if ( _showUMount == KryptDevice::OptionOn ) return true;
-
-  if ( _showUMount == KryptDevice::OptionOff ) return false;
-
-  return _globShowUMount;
-}
-
-bool KryptDevice::showEncrypt() const
-{
-  if ( _showEncrypt == KryptDevice::OptionOn ) return true;
-
-  if ( _showEncrypt == KryptDevice::OptionOff ) return false;
-
-  return _globShowEncrypt;
-}
-
-bool KryptDevice::showDecrypt() const
-{
-  if ( _showDecrypt == KryptDevice::OptionOn ) return true;
-
-  if ( _showDecrypt == KryptDevice::OptionOff ) return false;
-
-  return _globShowDecrypt;
-}
-
-bool KryptDevice::showOptions() const
-{
-  if ( _showOptions == KryptDevice::OptionOn ) return true;
-
-  if ( _showOptions == KryptDevice::OptionOff ) return false;
-
-  return _globShowOptions;
-}
-
-bool KryptDevice::showPopup() const
-{
-  if ( _showPopup == KryptDevice::OptionOn ) return true;
-
-  if ( _showPopup == KryptDevice::OptionOff ) return false;
-
-  return _globShowPopup;
-}
-
-bool KryptDevice::autoEncrypt() const
-{
-  if ( _autoEncrypt == KryptDevice::OptionOn ) return true;
-
-  if ( _autoEncrypt == KryptDevice::OptionOff ) return false;
-
-  return _globAutoEncrypt;
-}
-
-bool KryptDevice::autoDecrypt() const
-{
-  if ( _autoDecrypt == KryptDevice::OptionOn ) return true;
-
-  if ( _autoDecrypt == KryptDevice::OptionOff ) return false;
-
-  return _globAutoDecrypt;
-}
-
-void KryptDevice::showTrayMessage ( const QString & msg, const QPixmap & pixmap )
-{
-  if ( !_kryptApp ) return;
-
-  if ( !_kryptApp->getKryptTray() ) return;
-
-  KPassivePopup *pop = new KPassivePopup ( _kryptApp->getKryptTray() );
-
-  pop->setAutoDelete ( true );
-
-  QHBox *hb = new QHBox ( pop );
-
-  hb->setSpacing ( KDialog::spacingHint() + 10 );
-
-  QLabel * labIcon = new QLabel ( hb );
-
-  labIcon->setPixmap ( getIcon() );
-
-  QVBox *vb = new QVBox ( hb );
-
-  QLabel *labName = new QLabel ( QString ( "<b>%1</b>" ).arg ( getName() ), vb );
-
-  labName->setAlignment ( Qt::AlignHCenter );
-
-  QLabel *labMsg = new QLabel ( msg, vb );
-
-  labMsg->setAlignment ( AlignHCenter );
-
-  if ( !pixmap.isNull() )
-  {
-    labIcon = new QLabel ( hb );
-
-    labIcon->setPixmap ( pixmap );
-  }
-
-  pop->setView ( hb );
-
-  pop->show();
 }
 
 void KryptDevice::slotHALEvent ( int eventID, const QString& udi )
@@ -342,16 +82,9 @@ void KryptDevice::slotHALEvent ( int eventID, const QString& udi )
     }
   }
 
-  bool notifEnc = _notifyEncrypt;
-
-  bool notifDec = _notifyDecrypt;
-
-  _notifyEncrypt = false;
-  _notifyDecrypt = false;
-
   bool removePass = false;
 
-  bool doEncrypt = false;
+  bool encDev = false;
   bool newDev = false;
 
   switch ( eventID )
@@ -370,12 +103,18 @@ void KryptDevice::slotHALEvent ( int eventID, const QString& udi )
       removePass = true;
       break;
 
+      // Volume is decrypted
+
     case KRYPT_HAL_DEV_EVENT_MAPPED:
       _isDecrypted = true;
       _isMounted = false;
       removePass = true;
 
-      if ( _globNotifyAutoDecrypt && notifDec )
+      // This is manual decryption and we want manual decryption notifications
+      // or this is automatic one, and we want notifications for those
+
+      if ( ( _manualDecrypt && _kryptApp->notifyManualDecrypt() )
+           || ( !_manualDecrypt && _kryptApp->notifyAutoDecrypt() ) )
       {
         showTrayMessage ( i18n ( "Volume is now: Decrypted" ), UserIcon ( "decrypt_48" ) );
       }
@@ -386,7 +125,11 @@ void KryptDevice::slotHALEvent ( int eventID, const QString& udi )
       _isDecrypted = false;
       _isMounted = false;
 
-      if ( _globNotifyAutoEncrypt && notifEnc )
+      // This is manual encryption and we want manual encryption notifications
+      // or this is automatic one, and we want notifications for those
+
+      if ( ( _manualEncrypt && _kryptApp->notifyManualEncrypt() )
+           || ( !_manualEncrypt && _kryptApp->notifyAutoEncrypt() ) )
       {
         showTrayMessage ( i18n ( "Volume is now: Encrypted" ), UserIcon ( "encrypt_48" ) );
       }
@@ -404,10 +147,17 @@ void KryptDevice::slotHALEvent ( int eventID, const QString& udi )
       _isMounted = false;
       removePass = true;
 
-      if ( _encryptOnUmount || autoEncrypt() )
+      if ( _manualEncryptOfMounted )
       {
-        doEncrypt = true;
-        _notifyEncrypt = true;
+        // This umount is because user clicked 'encrypt' on mounted device
+        encDev = true;
+      }
+      else if ( autoEncrypt() )
+      {
+        // This umount is normal, but we want to do auto-encryption on umount.
+        // So lets mark it as automatic one:
+        _manualEncrypt = false;
+        encDev = true;
       }
 
       break;
@@ -418,7 +168,7 @@ void KryptDevice::slotHALEvent ( int eventID, const QString& udi )
       break;
   }
 
-  _encryptOnUmount = false;
+  _manualEncryptOfMounted = false;
 
   if ( removePass && _passDialog != 0 )
   {
@@ -431,10 +181,9 @@ void KryptDevice::slotHALEvent ( int eventID, const QString& udi )
     checkNewDevice();
   }
 
-  if ( doEncrypt )
+  if ( encDev )
   {
-    _encryptOnUmount = false;
-    slotClickEncrypt();
+    doEncrypt();
   }
 }
 
@@ -451,33 +200,30 @@ void KryptDevice::slotPassError ( const QString &udi, const QString &errorName, 
     updateDeviceInfo();
   }
 
-  // It is possible that there is no password dialog - when auto decryption
-  // is used, and password was stored. Krypt didn't show password dialog
-  // and tried to decrypt the volume automatically, but, for some reason,
-  // it failed. We want to show it, but only if user wants to get pop-ups.
-  // Also, the user might want to modify the password in such case.
-  if ( !_passDialog && showPopup() )
+  // It is possible that there is no password dialog - when there was a password
+  // available. Krypt didn't show password dialog
+  // and tried to decrypt the volume with the password it knows, but, for some reason,
+  // it failed. Sometimes we want to show the password dialog on error, sometimes we don't.
+  if ( !_passDialog )
   {
-    createPassDialog();
+    if ( _manualDecrypt )
+    {
+      // User clicked 'decrypt' button - for sure he wants to see if something is wrong!
+      showPassDialog();
+    }
+    else if ( !_manualDecrypt && showPopup() )
+    {
+      // User didn't click anything - automatic decryption is used,
+      // and he wants to see the password pop-up for this device - so lets show it to him
+      // (with an error)
+      showPassDialog();
+    }
   }
 
   if ( _passDialog != 0 )
   {
     _passDialog->slotPassError ( errorName, errorMsg );
   }
-}
-
-void KryptDevice::updateDeviceInfo()
-{
-  if ( _isPresent ) return;
-
-  if ( !_halBackend->isDevicePresent ( _udi ) ) return;
-
-  if ( !_halBackend->getDeviceInfo ( _udi, _vendor, _product, _blockDev, _type, _mountPoint ) ) return;
-
-  _isPresent = true;
-
-  slotSaveConfig();
 }
 
 void KryptDevice::slotSaveConfig()
@@ -507,8 +253,10 @@ void KryptDevice::slotSaveConfig()
   saveOption ( KRYPT_CONF_AUTO_DECRYPT, _autoDecrypt );
   saveOption ( KRYPT_CONF_SHOW_POPUP, _showPopup );
 
-  if ( _storePass && !_globPassInKWallet )
+  if ( _storePass && !_kryptApp->useKWallet() )
   {
+    // User wants to store the password in config file
+
     // It doesn't even try to encrypt the password,
     // but makes it a little bit less readable if someone
     // opens configuration file.
@@ -516,13 +264,18 @@ void KryptDevice::slotSaveConfig()
   }
   else
   {
+    // In any other case - remove the password from config file!
+
     _cfg->deleteEntry ( "password" );
 
-    if ( _globPassInKWallet )
+    if ( _kryptApp->useKWallet() )
     {
-      // This will also remove saved password if _globPassInKWallet = true, but _storePass = false
+      // If the wallet is used, no matter if we want to store the password or not
+      // This will also remove saved password if _kryptApp->useKWallet() = true, but _storePass = false
+      // If slotSaveConfig is called by global configuration dialog, there will
+      // be signal walletReady emited by KryptApp, if we just started using KDE Wallet.
+      // Otherwise, checkKWallet will be called by KryptDevConf - we just mark that we want to update KDE Wallet
       _saveToKWallet = true;
-      _kryptApp->checkKWallet();
     }
   }
 
@@ -531,66 +284,13 @@ void KryptDevice::slotSaveConfig()
   emit signalConfigChanged();
 }
 
-QStringList KryptDevice::obfuscate ( const QString & str )
+void KryptDevice::checkKWallet()
 {
-  QStringList ret;
-
-  for ( unsigned int i = 0; i < str.length(); ++i )
-  {
-    ret.push_back ( QString::number ( str[i].unicode(), OBFUSCATE_BASE ) );
-  }
-
-  return ret;
-}
-
-QString KryptDevice::deobfuscate ( const QStringList & list )
-{
-  QString ret;
-  bool ok;
-
-  for ( unsigned int i = 0; i < list.size(); ++i )
-  {
-    QChar c = QChar ( list[i].toUShort ( &ok, OBFUSCATE_BASE ) );
-
-    if ( ok ) ret.append ( c );
-  }
-
-  return ret;
-}
-
-KryptDevice::KryptDevice::OptionType KryptDevice::loadOption ( const char *opt )
-{
-  QString entry = _cfg->readEntry ( opt, KRYPT_CONF_OPT_DEFAULT ).lower();
-
-  if ( entry == KRYPT_CONF_OPT_ON )
-  {
-    return OptionOn;
-  }
-  else if ( entry == KRYPT_CONF_OPT_OFF )
-  {
-    return OptionOff;
-  }
-
-  return OptionDefault;
-}
-
-void KryptDevice::saveOption ( const char *opt, KryptDevice::KryptDevice::OptionType optVal )
-{
-  const char *val = KRYPT_CONF_OPT_DEFAULT;
-
-  if ( optVal == OptionOn ) val = KRYPT_CONF_OPT_ON;
-  else if ( optVal == OptionOff ) val = KRYPT_CONF_OPT_OFF;
-
-  _cfg->writeEntry ( opt, val );
+  _kryptApp->checkKWallet();
 }
 
 void KryptDevice::slotLoadConfig()
 {
-  bool oldPassInKWallet = _globPassInKWallet;
-  bool oldStorePass = _storePass;
-
-  loadGlobalOptions();
-
   _cfg->setGroup ( getConfigGroup() );
 
   if ( !_isPresent )
@@ -621,7 +321,6 @@ void KryptDevice::slotLoadConfig()
   _storePass = _cfg->readBoolEntry ( "store_password", false );
 
   _showMount = loadOption ( KRYPT_CONF_SHOW_MOUNT );
-
   _showUMount = loadOption ( KRYPT_CONF_SHOW_UMOUNT );
   _showEncrypt = loadOption ( KRYPT_CONF_SHOW_ENCRYPT );
   _showDecrypt = loadOption ( KRYPT_CONF_SHOW_DECRYPT );
@@ -630,153 +329,127 @@ void KryptDevice::slotLoadConfig()
   _autoDecrypt = loadOption ( KRYPT_CONF_AUTO_DECRYPT );
   _showPopup = loadOption ( KRYPT_CONF_SHOW_POPUP );
 
-  if ( _storePass && !_globPassInKWallet )
+  if ( _storePass && !_kryptApp->useKWallet() )
   {
+    // We store password in config file - lets read it!
+    // We don't check if it exists in config file - this is on purpose.
+    // If user just changed password storage, from Wallet to config file,
+    // and the password has been already read from the wallet, we don't
+    // want it to be stored in config file (for security reasons)
+    // So if we just started using config file for passwords,
+    // this will remove password read before from the Wallet
     _password = deobfuscate ( _cfg->readListEntry ( "password" ) );
   }
   else
   {
+    // In any other case - either we don't want to store the password,
+    // or it should be stored in KDE Wallet - we want to make sure it is not
+    // left in the config file!
     _cfg->deleteEntry ( "password" );
 
     _cfg->sync();
   }
 
-  if ( _globPassInKWallet )
+  if ( _kryptApp->useKWallet() )
   {
-    if ( !_storePass )
-    {
-      // This can actually also remove the password!
-      _saveToKWallet = true;
-      _kryptApp->checkKWallet();
-    }
-    else
-    {
-      if ( !_isInit && _password.length() > 0
-           && ( oldPassInKWallet != _globPassInKWallet || !oldStorePass ) )
-      {
-        // We want to store the password in the wallet, we have a password to store,
-        // and this configuration (store + wallet) has just been set
-        _saveToKWallet = true;
-        _kryptApp->checkKWallet();
-      }
-    }
+    // No matter if we want to store the password or not, we want
+    // to update KDE Wallet at next possibility - either remove existing
+    // password, or store it. If this is executed because of global
+    // configuration change, and we just started using KDE Wallet,
+    // the 'checkWallet' will be executed by
+    // KryptApp, and signal walletReady will be emited.
+    // If there are many devices, we don't want each of them to call
+    // checkKWallet - so we just mark that the password should be saved if
+    // opportunity arises.
+
+    _saveToKWallet = true;
   }
-
-  if ( _storePass && _globPassInKWallet && _password.length() < 1 )
-  {
-    _kryptApp->checkKWallet();
-  }
-}
-
-void KryptDevice::loadGlobalOptions()
-{
-  _cfg->setGroup ( KRYPT_CONF_GLOBAL_GROUP );
-
-  _globShowMount = _cfg->readBoolEntry ( KRYPT_CONF_SHOW_MOUNT, true );
-  _globShowUMount = _cfg->readBoolEntry ( KRYPT_CONF_SHOW_UMOUNT, true );
-  _globShowEncrypt = _cfg->readBoolEntry ( KRYPT_CONF_SHOW_ENCRYPT, true );
-  _globShowDecrypt = _cfg->readBoolEntry ( KRYPT_CONF_SHOW_DECRYPT, true );
-  _globShowOptions = _cfg->readBoolEntry ( KRYPT_CONF_SHOW_OPTIONS, true );
-
-  _globAutoEncrypt = _cfg->readBoolEntry ( KRYPT_CONF_AUTO_ENCRYPT, true );
-  _globAutoDecrypt = _cfg->readBoolEntry ( KRYPT_CONF_AUTO_DECRYPT, false );
-
-  _globNotifyAutoEncrypt = _cfg->readBoolEntry ( KRYPT_CONF_NOTIFY_AUTO_ENCRYPT, true );
-  _globNotifyAutoDecrypt = _cfg->readBoolEntry ( KRYPT_CONF_NOTIFY_AUTO_DECRYPT, true );
-
-  _globShowPopup = _cfg->readBoolEntry ( KRYPT_CONF_SHOW_POPUP, true );
-
-  _globPassInKWallet = _cfg->readBoolEntry ( KRYPT_CONF_PASS_IN_WALLET, true );
 }
 
 void KryptDevice::slotClickMount()
 {
-  _encryptOnUmount = false;
+  _manualDecrypt = false;
+  _manualEncrypt = false;
+  _manualEncryptOfMounted = false;
   _halBackend->slotMountDevice ( _udi );
 }
 
 void KryptDevice::slotClickUMount()
 {
-  _encryptOnUmount = false;
+  _manualDecrypt = false;
+  _manualEncrypt = false;
+  _manualEncryptOfMounted = false;
+  doUMount();
+}
+
+void KryptDevice::doUMount()
+{
   _halBackend->slotUmountDevice ( _udi );
+}
+
+void KryptDevice::doEncrypt()
+{
+  _halBackend->slotRemoveDevice ( _udi );
 }
 
 void KryptDevice::slotClickEncrypt()
 {
+  _manualDecrypt = false;
+  _manualEncrypt = true;
+
   if ( !_isMounted )
   {
-    _encryptOnUmount = false;
-    _halBackend->slotRemoveDevice ( _udi );
+    _manualEncryptOfMounted = false;
+    doEncrypt();
   }
   else
   {
-    _encryptOnUmount = true;
-    slotClickUMount();
+    _manualEncryptOfMounted = true;
+    doUMount();
   }
 }
 
 void KryptDevice::slotClickDecrypt()
 {
-  _encryptOnUmount = false;
+  // Manual decryption
+  _manualDecrypt = true;
+  _manualEncrypt = false;
+  _manualEncryptOfMounted = false;
 
-  if ( _password.length() > 0 && autoDecrypt() )
+  // We have the password. Just try to decrypt the device.
+
+  if ( _password.length() > 0 )
   {
     slotPassDecrypt();
     return;
   }
 
-  popupPassDialog();
-}
+  // We don't have the password
 
-void KryptDevice::slotClickOptions()
-{
-  if ( _confDialog != 0 )
+  if ( _storePass && _kryptApp->useKWallet() )
   {
-    delete _confDialog;
-    _confDialog = 0;
+    // But we store the password for this device, and we are using KDE Wallet
+    // Try to get the password from there!
+
+    // Mark that we are waiting for the password to decrypt this device
+    _waitingToDecrypt = true;
+
+    // And check the wallet!
+    checkKWallet();
+    return;
   }
 
-  _confDialog = new KryptDevConf ( this );
-
-  connect ( _confDialog, SIGNAL ( signalClosed() ),
-            this, SLOT ( slotClosedConfDialog() ) );
-
-  connect ( _confDialog, SIGNAL ( signalConfigChanged() ),
-            this, SLOT ( slotSaveConfig() ) );
-
-  _confDialog->show();
-}
-
-void KryptDevice::slotPassDecrypt ( )
-{
-  if ( _password.length() < 1 ) return;
-
-  recreateCUdi();
-
-  _halBackend->slotSendPassword ( _cUdi, _password.ascii() );
-}
-
-void KryptDevice::slotClosedPassDialog()
-{
-  if ( _passDialog != 0 )
-  {
-    _passDialog->deleteLater();
-    _passDialog = 0;
-  }
-}
-
-void KryptDevice::slotClosedConfDialog()
-{
-  if ( _confDialog != 0 )
-  {
-    _confDialog->deleteLater();
-    _confDialog = 0;
-  }
+  // We don't have the password and we don't use KDE Wallet - show the pass dialog!
+  showPassDialog();
 }
 
 void KryptDevice::slotKWalletReady ( bool isReady )
 {
   KWallet::Wallet *w = 0;
+
+  // We don't use KDE Wallet... strange!
+
+  if ( !_kryptApp->useKWallet() ) return;
 
   if ( isReady )
   {
@@ -790,10 +463,18 @@ void KryptDevice::slotKWalletReady ( bool isReady )
 
   if ( isReady && _saveToKWallet )
   {
+    // The wallet is ready, and we want to update password information
+
     if ( w->setFolder ( KRYPT_KWALLET_FOLDER ) )
     {
+
+      // We managed to open the folder
+
       if ( _storePass )
       {
+        // We want to store the password - save the password, but only
+        // if it exists (is longer than 0)
+
         if ( _password.length() > 0 )
         {
           // Returns 0 on success!
@@ -805,18 +486,29 @@ void KryptDevice::slotKWalletReady ( bool isReady )
       }
       else
       {
-        if ( !w->removeEntry ( _udi ) )
+        // We don't want to store the password - remove it if it exists in the wallet!
+
+        if ( w->hasEntry ( _udi ) )
         {
+          if ( !w->removeEntry ( _udi ) )
+          {
+            // We have managed to update the password information
+            // so there is no need to do that again
+            _saveToKWallet = false;
+          }
+        }
+        else
+        {
+          // The password didn't exist, so we don't have to remove it again.
           _saveToKWallet = false;
         }
       }
     }
   }
 
-  // Lets read the password. Might be needed later.
-  // Actually if _password.length() > 0 _waitingToAutoDecrypt shouldn't be true.
-  // But just to make sure...
-  if ( isReady && _storePass && _globPassInKWallet && ( _password.length() < 1 || _waitingToAutoDecrypt ) )
+  // The Wallet is ready, and we want to store the password - so it's possible that it's already there!
+  // Lets read the password. Might be needed later. But only if we don't have the password read already.
+  if ( isReady && _storePass && _password.length() < 1 )
   {
     if ( w->setFolder ( KRYPT_KWALLET_FOLDER ) )
     {
@@ -824,61 +516,80 @@ void KryptDevice::slotKWalletReady ( bool isReady )
       {
         _password = "";
       }
-      else if ( _waitingToAutoDecrypt && _password.length() > 0 )
-      {
-        _waitingToAutoDecrypt = false;
-        _notifyDecrypt = true;
-        slotPassDecrypt();
-        return;
-      }
     }
   }
 
-  if ( _waitingToAutoDecrypt )
+  // We are waiting to decrypt the device
+  if ( _waitingToDecrypt )
   {
-    // We are still waiting for decryption, but password doesn't exist,
-    // or opening the wallet failed
-    // (And we want pop-ups) - show popup
-    if ( !isReady || _password.length() < 1 )
-    {
-      _waitingToAutoDecrypt = false;
-      _notifyDecrypt = false;
+    _waitingToDecrypt = false;
 
-      if ( showPopup() ) popupPassDialog();
+    if ( _password.length() > 0 )
+    {
+      // We now have the password - lets try to decrypt the device with the
+      // new password
+
+      slotPassDecrypt();
+      return;
+    }
+    else
+    {
+      // We still don't have the password. This is not good.
+      // We want to display password pop-up, but only if the user wants to see it!
+      if ( showPopup() ) showPassDialog();
+
+      return;
     }
   }
-
-  _waitingToAutoDecrypt = false;
 }
 
 void KryptDevice::checkNewDevice()
 {
+  // New, encrypted, device detected
+
+  // We want to ignore it - do nothing!
   if ( isIgnored() ) return;
 
+  // AutoDecryption is active - try to decrypt it
   if ( autoDecrypt() )
   {
+    // This is not manual decryption
+    _manualDecrypt = false;
+
+    // We have the password (no matter from where)
+
     if ( _password.length() > 0 )
     {
-      _notifyDecrypt = true;
+      // Just try to decrypt it
       slotPassDecrypt();
       return;
     }
 
-    if ( _globPassInKWallet && _storePass )
+    // We don't have the password, but we want to store it (so it's possible
+    // that it's stored), and we want to use KDE Wallet
+    if ( _kryptApp->useKWallet() && _storePass )
     {
-      _waitingToAutoDecrypt = true;
-      _kryptApp->checkKWallet();
+      // Mark that we are waiting for the password to decrypt this device
+      _waitingToDecrypt = true;
+
+      // And check the wallet!
+      checkKWallet();
       return;
     }
   }
 
+  // We don't want auto decryption at this point.
+
+  // And we don't want any pop-ups - just exit.
   if ( !showPopup() ) return;
 
-  popupPassDialog();
+  // Otherwise, show password dialog!
+  showPassDialog();
 }
 
-void KryptDevice::popupPassDialog()
+void KryptDevice::showPassDialog()
 {
+  // Destroy existing pass dialog (if any)
   if ( _passDialog != 0 )
   {
     delete _passDialog;
@@ -894,12 +605,8 @@ void KryptDevice::popupPassDialog()
     if ( !_isPresent ) return;
   }
 
-  createPassDialog();
-}
-
-void KryptDevice::createPassDialog()
-{
-  _notifyDecrypt = false;
+  // Decryption from this point will be manual, since we displayed the pass dialog!
+  _manualDecrypt = true;
 
   _passDialog = new KryptDialog ( this );
 
@@ -918,119 +625,10 @@ void KryptDevice::setPassword ( const QString & pass )
 {
   _password = pass;
 
-  if ( _globPassInKWallet )
+  if ( _kryptApp->useKWallet() )
   {
+    // We don't call checkKWallet here - KryptDevConf calls checkKWallet
+    // by itself. We only want to mark here that there is something new to store
     _saveToKWallet = true;
-    _kryptApp->checkKWallet();
   }
-}
-
-bool KryptDevice::usesKWallet() const
-{
-  return _globPassInKWallet;
-}
-
-bool KryptDevice::shouldAutoDecrypt() const
-{
-  if ( _autoDecrypt == OptionOn ) return true;
-
-  if ( _autoDecrypt == OptionOff ) return false;
-
-  // So it's default
-  return _globAutoDecrypt;
-}
-
-KryptDevice::OptionType KryptDevice::getOptShowMount() const
-{
-  return _showMount;
-}
-
-KryptDevice::OptionType KryptDevice::getOptShowUMount() const
-{
-  return _showUMount;
-}
-
-KryptDevice::OptionType KryptDevice::getOptShowDecrypt() const
-{
-  return _showDecrypt;
-}
-
-KryptDevice::OptionType KryptDevice::getOptShowEncrypt() const
-{
-  return _showEncrypt;
-}
-
-KryptDevice::OptionType KryptDevice::getOptShowOptions() const
-{
-  return _showOptions;
-}
-
-KryptDevice::OptionType KryptDevice::getOptShowPopup() const
-{
-  return _showPopup;
-}
-
-KryptDevice::OptionType KryptDevice::getOptAutoDecrypt() const
-{
-  return _autoDecrypt;
-}
-
-KryptDevice::OptionType KryptDevice::getOptAutoEncrypt() const
-{
-  return _autoEncrypt;
-}
-
-bool KryptDevice::getStorePass() const
-{
-  return _storePass;
-}
-
-void KryptDevice::setOptShowMount ( KryptDevice::OptionType nOpt )
-{
-  _showMount = nOpt;
-}
-
-void KryptDevice::setOptShowUMount ( KryptDevice::OptionType nOpt )
-{
-  _showUMount = nOpt;
-}
-
-void KryptDevice::setOptShowDecrypt ( KryptDevice::OptionType nOpt )
-{
-  _showDecrypt = nOpt;
-}
-
-void KryptDevice::setOptShowEncrypt ( KryptDevice::OptionType nOpt )
-{
-  _showEncrypt = nOpt;
-}
-
-void KryptDevice::setOptShowOptions ( KryptDevice::OptionType nOpt )
-{
-  _showOptions = nOpt;
-}
-
-void KryptDevice::setOptShowPopup ( KryptDevice::OptionType nOpt )
-{
-  _showPopup = nOpt;
-}
-
-void KryptDevice::setOptAutoDecrypt ( KryptDevice::OptionType nOpt )
-{
-  _autoDecrypt = nOpt;
-}
-
-void KryptDevice::setOptAutoEncrypt ( KryptDevice::OptionType nOpt )
-{
-  _autoEncrypt = nOpt;
-}
-
-void KryptDevice::setStorePass ( bool nVal )
-{
-  _storePass = nVal;
-}
-
-void KryptDevice::setIgnored ( bool newIgnored )
-{
-  _isIgnored = newIgnored;
 }

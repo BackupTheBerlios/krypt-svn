@@ -86,8 +86,10 @@ KryptDevConf::~KryptDevConf()
 
 void KryptDevConf::slotOk()
 {
-  if ( _dlg->cStorePass->isChecked() && !_kryptDev->usesKWallet() )
+  if ( !_kryptDev->usesKWallet() && _dlg->cStorePass->isChecked() && !_kryptDev->getStorePass() )
   {
+    // Show this only if KryptDevice didn't have password storage enabled before
+
     int ret = KMessageBox::messageBox ( this, KMessageBox::WarningContinueCancel,
                                         i18n ( "You have selected to store the password. "
                                                "However, use of KDE Wallet is disabled, so unencrypted password will be "
@@ -113,9 +115,13 @@ void KryptDevConf::slotOk()
 
   _kryptDev->setPassword ( _dlg->linePass->text() );
 
+  emit signalConfigChanged();
+
+  _kryptDev->checkKWallet();
+
   hide();
 
-  emit signalConfigChanged();
+  emit signalClosed();
 }
 
 void KryptDevConf::slotCancel()

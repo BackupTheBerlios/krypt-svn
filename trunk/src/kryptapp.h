@@ -55,6 +55,22 @@ public:
   void checkKWallet();
   KWallet::Wallet *getKWallet();
 
+  bool showMount() const;
+  bool showUMount() const;
+  bool showEncrypt() const;
+  bool showDecrypt() const;
+  bool showOptions() const;
+  bool showPopup() const;
+  bool autoEncrypt() const;
+  bool autoDecrypt() const;
+  bool notifyAutoEncrypt() const;
+  bool notifyAutoDecrypt() const;
+  bool notifyManualEncrypt() const;
+  bool notifyManualDecrypt() const;
+  bool useKWallet() const;
+  bool groupByCategory() const;
+  bool flatMenu() const;
+
 signals:
   void signalConfigChanged();
   void signalKWalletReady ( bool isReady );
@@ -66,6 +82,7 @@ protected slots:
   void slotNewInfo ( const QString &info );
   void slotShowConfig();
   void slotConfigChanged();
+  void slotConfigClosed();
   void slotWalletOpened ( bool success );
 
 protected:
@@ -76,8 +93,25 @@ protected:
   QMap<QString, KryptDevice*> _udi2Dev;
   QMap<int, KryptDevice*> _id2Dev;
 
+  bool _showMount;
+  bool _showUMount;
+  bool _showEncrypt;
+  bool _showDecrypt;
+  bool _showOptions;
+  bool _showPopup;
+  bool _autoEncrypt;
+  bool _autoDecrypt;
+  bool _notifyAutoEncrypt;
+  bool _notifyAutoDecrypt;
+  bool _notifyManualEncrypt;
+  bool _notifyManualDecrypt;
+  bool _useKWallet;
+  bool _groupByCategory;
+  bool _flatMenu;
+
   void createAllKnownDevices();
   void checkConfig();
+  void loadConfig();
 };
 
 #endif // _KRYPT_APP_H_

@@ -50,9 +50,11 @@ KryptDevice::KryptDevice ( KryptApp *kryptApp, const QString & udi ) :
   _isMounted = false;
   _isIgnored = false;
 
-  _manualDecrypt = false;
-  _manualEncrypt = false;
-  _manualEncryptOfMounted = false;
+  _isManualDecrypt = false;
+  _isAutoDecrypt = false;
+  _isManualEncrypt = false;
+  _isAutoEncrypt = false;
+  _isManualEncryptOfMounted = false;
 
   _saveToKWallet = false;
   _waitingToDecrypt = false;
@@ -114,11 +116,15 @@ void KryptDevice::slotHALEvent ( int eventID, const QString& udi )
       // This is manual decryption and we want manual decryption notifications
       // or this is automatic one, and we want notifications for those
 
-      if ( ( _manualDecrypt && _kryptApp->notifyManualDecrypt() )
-           || ( !_manualDecrypt && _kryptApp->notifyAutoDecrypt() ) )
+      if ( ( _isManualDecrypt && _kryptApp->notifyManualDecrypt() )
+           || ( _isAutoDecrypt && _kryptApp->notifyAutoDecrypt() ) )
       {
         showTrayMessage ( i18n ( "Volume is now: Decrypted" ), UserIcon ( "decrypt_48" ) );
       }
+
+      _isManualDecrypt = false;
+
+      _isAutoDecrypt = false;
 
       break;
 
@@ -129,11 +135,15 @@ void KryptDevice::slotHALEvent ( int eventID, const QString& udi )
       // This is manual encryption and we want manual encryption notifications
       // or this is automatic one, and we want notifications for those
 
-      if ( ( _manualEncrypt && _kryptApp->notifyManualEncrypt() )
-           || ( !_manualEncrypt && _kryptApp->notifyAutoEncrypt() ) )
+      if ( ( _isManualEncrypt && _kryptApp->notifyManualEncrypt() )
+           || ( _isAutoEncrypt && _kryptApp->notifyAutoEncrypt() ) )
       {
         showTrayMessage ( i18n ( "Volume is now: Encrypted" ), UserIcon ( "encrypt_48" ) );
       }
+
+      _isManualEncrypt = false;
+
+      _isAutoEncrypt = false;
 
       break;
 
@@ -148,17 +158,22 @@ void KryptDevice::slotHALEvent ( int eventID, const QString& udi )
       _isMounted = false;
       removePass = true;
 
-      if ( _manualEncryptOfMounted )
+      if ( _isManualEncryptOfMounted )
       {
         // This umount is because user clicked 'encrypt' on mounted device
         encDev = true;
+
+        _isManualEncrypt = true;
+        _isAutoEncrypt = false;
       }
       else if ( autoEncrypt() )
       {
+        encDev = true;
+
         // This umount is normal, but we want to do auto-encryption on umount.
         // So lets mark it as automatic one:
-        _manualEncrypt = false;
-        encDev = true;
+        _isManualEncrypt = false;
+        _isAutoEncrypt = true;
       }
 
       break;
@@ -169,7 +184,7 @@ void KryptDevice::slotHALEvent ( int eventID, const QString& udi )
       break;
   }
 
-  _manualEncryptOfMounted = false;
+  _isManualEncryptOfMounted = false;
 
   if ( removePass && _passDialog != 0 )
   {
@@ -207,16 +222,15 @@ void KryptDevice::slotPassError ( const QString &udi, const QString &errorName, 
   // it failed. Sometimes we want to show the password dialog on error, sometimes we don't.
   if ( !_passDialog )
   {
-    if ( _manualDecrypt )
+    if ( _isManualDecrypt )
     {
       // User clicked 'decrypt' button - for sure he wants to see if something is wrong!
       showPassDialog();
     }
-    else if ( !_manualDecrypt && showPopup() )
+    else if ( _isAutoDecrypt && showPopup() )
     {
-      // User didn't click anything - automatic decryption is used,
-      // and he wants to see the password pop-up for this device - so lets show it to him
-      // (with an error)
+      // Automatic decryption is used, and user wants to see the password pop-up
+      // for this device - so lets show it to him (with an error)
       showPassDialog();
     }
   }
@@ -369,17 +383,21 @@ void KryptDevice::slotLoadConfig()
 
 void KryptDevice::slotClickMount()
 {
-  _manualDecrypt = false;
-  _manualEncrypt = false;
-  _manualEncryptOfMounted = false;
+  _isManualDecrypt = false;
+  _isAutoDecrypt = false;
+  _isManualEncrypt = false;
+  _isAutoEncrypt = false;
+  _isManualEncryptOfMounted = false;
   _halBackend->slotMountDevice ( _udi );
 }
 
 void KryptDevice::slotClickUMount()
 {
-  _manualDecrypt = false;
-  _manualEncrypt = false;
-  _manualEncryptOfMounted = false;
+  _isManualDecrypt = false;
+  _isAutoDecrypt = false;
+  _isManualEncrypt = false;
+  _isAutoEncrypt = false;
+  _isManualEncryptOfMounted = false;
   doUMount();
 }
 
@@ -395,17 +413,19 @@ void KryptDevice::doEncrypt()
 
 void KryptDevice::slotClickEncrypt()
 {
-  _manualDecrypt = false;
-  _manualEncrypt = true;
+  _isManualDecrypt = false;
+  _isAutoDecrypt = false;
+  _isManualEncrypt = true;
+  _isAutoEncrypt = false;
 
   if ( !_isMounted )
   {
-    _manualEncryptOfMounted = false;
+    _isManualEncryptOfMounted = false;
     doEncrypt();
   }
   else
   {
-    _manualEncryptOfMounted = true;
+    _isManualEncryptOfMounted = true;
     doUMount();
   }
 }
@@ -413,9 +433,11 @@ void KryptDevice::slotClickEncrypt()
 void KryptDevice::slotClickDecrypt()
 {
   // Manual decryption
-  _manualDecrypt = true;
-  _manualEncrypt = false;
-  _manualEncryptOfMounted = false;
+  _isManualDecrypt = true;
+  _isAutoDecrypt = false;
+  _isManualEncrypt = false;
+  _isAutoEncrypt = false;
+  _isManualEncryptOfMounted = false;
 
   // We have the password. Just try to decrypt the device.
 
@@ -570,8 +592,9 @@ void KryptDevice::checkNewDevice()
   // AutoDecryption is active - try to decrypt it
   if ( autoDecrypt() )
   {
-    // This is not manual decryption
-    _manualDecrypt = false;
+    // This is auto decryption
+    _isManualDecrypt = false;
+    _isAutoDecrypt = true;
 
     // We have the password (no matter from where)
 
@@ -642,7 +665,9 @@ void KryptDevice::showPassDialog()
   }
 
   // Decryption from this point will be manual, since we displayed the pass dialog!
-  _manualDecrypt = true;
+  _isManualDecrypt = true;
+
+  _isAutoDecrypt = false;
 
   _passDialog = new KryptDialog ( this );
 

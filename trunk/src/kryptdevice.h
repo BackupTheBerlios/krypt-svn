@@ -152,9 +152,11 @@ private:
   bool _isMounted;
   bool _isIgnored;
 
-  bool _manualEncrypt;
-  bool _manualEncryptOfMounted;
-  bool _manualDecrypt;
+  bool _isManualEncrypt;
+  bool _isAutoEncrypt;
+  bool _isManualEncryptOfMounted;
+  bool _isManualDecrypt;
+  bool _isAutoDecrypt;
 
   bool _saveToKWallet;
   bool _waitingToDecrypt;

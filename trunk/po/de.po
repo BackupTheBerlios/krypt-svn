@@ -1,15 +1,16 @@
-# translation of de.po to Deutsch
+# translation of de.po to deutsch
 # This file is put in the public domain.
 #
 # Robert Jähne <robert.jaehne@googlemail.com>, 2008.
+# Robert Jähne <robert@jaehne.bz>, 2008.
 msgid ""
 msgstr ""
 "Project-Id-Version: de\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2008-05-04 17:37-0400\n"
-"PO-Revision-Date: 2008-04-15 18:52+0200\n"
+"POT-Creation-Date: 2008-05-05 10:57-0400\n"
+"PO-Revision-Date: 2008-05-05 16:09+0200\n"
 "Last-Translator: Robert Jähne <robert@jaehne.bz>\n"
-"Language-Team: Deutsch <de@li.org>\n"
+"Language-Team: deutsch\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
@@ -19,17 +20,13 @@ msgstr ""
 msgid ""
 "_: NAME OF TRANSLATORS\n"
 "Your names"
-msgstr ""
-"_: NAME DES ÜBERSETZERS\n"
-"Robert Jaehne"
+msgstr "Robert Jaehne"
 
 #: _translatorinfo.cpp:3
 msgid ""
 "_: EMAIL OF TRANSLATORS\n"
 "Your emails"
-msgstr ""
-"_: EMAIL DES ÜBERSETZERS\n"
-"robert@jaehne.bz"
+msgstr "robert@jaehne.bz"
 
 #: kryptconf.cpp:156
 msgid ""
@@ -38,6 +35,13 @@ msgid ""
 "Also, if there are any volume passwords stored in KDE Wallet, they will not "
 "be transferedto the configuration file - you will have to enter them again.\n"
 msgstr ""
+"Die Speicherung eines UNVERSCHLÜSSELTEN Passwortes in einer "
+"Konfigurationsdatei ist unsicher!\n"
+"Es wird dringend empfohlen die KDE Brieftasche zur Passwortspeicherung zu "
+"verwenden.\n"
+"Falls bereits Datenträger-Passwörter in der KDE Brieftasche gespeichert sind "
+"werden diese nicht in die Konfigurationsdatei übertragen - sie müssen diese "
+"neu eingeben.\n"
 
 #: kryptdevconf.cpp:94 kryptdialog.cpp:134
 msgid ""
@@ -47,19 +51,23 @@ msgid ""
 "You are strongly encouraged to enable KDE Wallet in Krypt's global "
 "configuration."
 msgstr ""
+"Sie haben sich dafür entschieden das Passwort zu speichern. Die Verwendung "
+"der KDE Brieftasche ist aber deaktiviert - das unverschlüsselte Passwort "
+"wird in der Konfigurationsdatei gespeichert. Das ist unsicher!\n"
+"Es wird dringend empfholen die KDE Brieftasche in der globalen Krypt "
+"Konfiguration zu aktivieren."
 
 #: kryptdevice.cpp:119
 msgid "Volume is now: Decrypted"
-msgstr ""
+msgstr "Datenträger ist jetzt entschlüsselt"
 
 #: kryptdevice.cpp:134
 msgid "Volume is now: Encrypted"
-msgstr ""
+msgstr "Datenträger ist jetzt: verschlüsselt"
 
 #: kryptdialog.cpp:34
-#, fuzzy
 msgid "Decrypt Storage Device"
-msgstr "Datenträger wird entschlüsselt"
+msgstr "Datenträger zum Entschlüsseln"
 
 #. i18n: file ./devconfdialog.ui line 442
 #: kryptdialog.cpp:35 rc.cpp:226
@@ -72,13 +80,12 @@ msgid "Wrong password!"
 msgstr "Falsches Passwort!"
 
 #: kryptdialog.cpp:100
-#, fuzzy
 msgid ""
 "Decryption failed! Application \"cryptsetup\" not found. Is package with "
 "\"cryptsetup\" program installed?"
 msgstr ""
 "Entschlüsselung fehlgeschlagen! Die Anwendung \"cryptsetup\" wurde nicht "
-"gefunden. Ist das Paket \"util-linux-crypto\" installiert?"
+"gefunden. Ist das Paket \"cryptsetup\" installiert?"
 
 #: kryptdialog.cpp:106
 msgid "%1 is already decrypted!"
@@ -86,7 +93,7 @@ msgstr "%1 ist schon entschlüsselt!"
 
 #: kryptsystray.cpp:59
 msgid "Control LUKS encrypted volumes"
-msgstr ""
+msgstr "Kontrolle der LUKS verschlüsselten Datenträger"
 
 #: kryptsystray.cpp:154 kryptsystray.cpp:166 kryptsystray.cpp:357
 #: kryptsystray.cpp:370
@@ -113,27 +120,28 @@ msgstr "Datenträger entschlüsseln"
 #: kryptsystray.cpp:482 rc.cpp:187
 #, no-c-format
 msgid "Volume Options"
-msgstr ""
+msgstr "Datenträger Optionen"
 
 #: kryptsystray.cpp:514
 msgid "Nothing to display..."
-msgstr ""
+msgstr "Nichts anzuzeigen"
 
 #: kryptsystray.cpp:522
 msgid "Configure Krypt..."
 msgstr "Konfiguriere Krypt ..."
 
+# main.cpp:30
 #: main.cpp:31
 msgid "LUKS front-end for KDE"
-msgstr ""
+msgstr "LUKS Front-End für KDE"
 
 #: main.cpp:32
 msgid "Copyright (C) 2007, 2008 Jakub Schmidtke"
-msgstr ""
+msgstr "Copyright (C) 2007, 2008 Jakub Schmidtke"
 
 #: main.cpp:33
 msgid "http://krypt.berlios.de"
-msgstr ""
+msgstr "http://krypt.berlios.de"
 
 #: main.cpp:37
 msgid "Application is being auto-started at KDE session start"
@@ -144,22 +152,16 @@ msgid "Krypt"
 msgstr "Krypt"
 
 #: main.cpp:49
-#, fuzzy
 msgid "_: NAME OF TRANSLATORS\\nYour names"
-msgstr ""
-"_: NAME DES ÜBERSETZERS\n"
-"Robert Jaehne"
+msgstr "Robert Jähne"
 
 #: main.cpp:50
-#, fuzzy
 msgid "_: EMAIL OF TRANSLATORS\\nYour emails"
-msgstr ""
-"_: EMAIL DES ÜBERSETZERS\n"
-"robert@jaehne.bz"
+msgstr "robert@jaehne.bz"
 
 #: main.cpp:51
 msgid "krypt-bugs@lists.berlios.de"
-msgstr ""
+msgstr "krypt-bugs@lists.berlios.de"
 
 #. i18n: file ./decryptdialog.ui line 30
 #: rc.cpp:3
@@ -180,35 +182,35 @@ msgstr ""
 #. i18n: file ./decryptdialog.ui line 143
 #. i18n: file ./devconfdialog.ui line 2018
 #: rc.cpp:10 rc.cpp:302
-#, fuzzy, no-c-format
+#, no-c-format
 msgid "&Password:"
 msgstr "&Passwort:"
 
 #. i18n: file ./decryptdialog.ui line 200
 #: rc.cpp:13
-#, fuzzy, no-c-format
+#, no-c-format
 msgid "&Store Password"
-msgstr "&Passwort:"
+msgstr "&Speichere Passwort:"
 
 #. i18n: file ./decryptdialog.ui line 203
 #. i18n: file ./devconfdialog.ui line 2067
 #: rc.cpp:16 rc.cpp:308
 #, no-c-format
 msgid "Alt+S"
-msgstr ""
+msgstr "Alt+S"
 
 #. i18n: file ./decryptdialog.ui line 231
 #: rc.cpp:19
 #, no-c-format
 msgid "Decrypt &Automatically"
-msgstr ""
+msgstr "&Automatisch entschlüsseln"
 
 #. i18n: file ./decryptdialog.ui line 234
 #. i18n: file ./confdialog.ui line 244
 #: rc.cpp:22 rc.cpp:75
 #, no-c-format
 msgid "Alt+A"
-msgstr ""
+msgstr "Alt+D"
 
 #. i18n: file ./confdialog.ui line 24
 #: rc.cpp:29
@@ -220,25 +222,25 @@ msgstr "Krypt Konfiguration"
 #: rc.cpp:32
 #, no-c-format
 msgid "&Global Options"
-msgstr ""
+msgstr "&Globale Optionen"
 
 #. i18n: file ./confdialog.ui line 125
 #: rc.cpp:35
-#, fuzzy, no-c-format
+#, no-c-format
 msgid "Show Volume Actions"
-msgstr "Zeige Aktionen"
+msgstr "Zeige Datenträger Aktionen"
 
 #. i18n: file ./confdialog.ui line 139
 #: rc.cpp:41
 #, no-c-format
 msgid "Alt+O"
-msgstr ""
+msgstr "Alt+O"
 
 #. i18n: file ./confdialog.ui line 147
 #: rc.cpp:44
-#, fuzzy, no-c-format
+#, no-c-format
 msgid "&Mount"
-msgstr "Einbinden"
+msgstr "&Einbinden"
 
 #. i18n: file ./confdialog.ui line 150
 #. i18n: file ./confdialog.ui line 513
@@ -246,262 +248,254 @@ msgstr "Einbinden"
 #: rc.cpp:47 rc.cpp:159 rc.cpp:165
 #, no-c-format
 msgid "Alt+M"
-msgstr ""
+msgstr "Alt+E"
 
 #. i18n: file ./confdialog.ui line 158
 #: rc.cpp:50
-#, fuzzy, no-c-format
+#, no-c-format
 msgid "&Encrypt"
-msgstr "Verschlüsseln"
+msgstr "&Verschlüsseln"
 
 #. i18n: file ./confdialog.ui line 161
 #: rc.cpp:53
 #, no-c-format
 msgid "Alt+E"
-msgstr ""
+msgstr "Alt+V"
 
 #. i18n: file ./confdialog.ui line 169
 #: rc.cpp:56
-#, fuzzy, no-c-format
+#, no-c-format
 msgid "&Umount"
-msgstr "Auswerfen"
+msgstr "&Auswerfen"
 
 #. i18n: file ./confdialog.ui line 172
 #: rc.cpp:59
 #, no-c-format
 msgid "Alt+U"
-msgstr ""
+msgstr "Alt+A"
 
 #. i18n: file ./confdialog.ui line 180
 #: rc.cpp:62
-#, fuzzy, no-c-format
+#, no-c-format
 msgid "&Decrypt"
-msgstr "Entschlüsseln"
+msgstr "&Entschlüsseln"
 
 #. i18n: file ./confdialog.ui line 183
 #: rc.cpp:65
 #, no-c-format
 msgid "Alt+D"
-msgstr ""
+msgstr "Alt+E"
 
 #. i18n: file ./confdialog.ui line 229
 #: rc.cpp:68
 #, no-c-format
 msgid "Events"
-msgstr ""
+msgstr "Events"
 
 #. i18n: file ./confdialog.ui line 241
 #: rc.cpp:71
-#, fuzzy, no-c-format
+#, no-c-format
 msgid ""
 "&Automatically encrypt volumes\n"
 "when they are umounted"
 msgstr ""
-"Datenträger automatisch vor dem\n"
+"&Datenträger automatisch vor dem\n"
 "Auswerfen verschlüsseln."
 
 #. i18n: file ./confdialog.ui line 253
 #: rc.cpp:78
-#, fuzzy, no-c-format
+#, no-c-format
 msgid ""
 "Automatically decrypt &new volumes\n"
 "if saved password is found"
 msgstr ""
-"Datenträger automatisch vor dem\n"
-"Auswerfen verschlüsseln."
+"Datenträger automatisch &entschlüsseln\n"
+"wenn ein gespeichertes Passwort vorhanden ist."
 
 #. i18n: file ./confdialog.ui line 256
 #: rc.cpp:82
 #, no-c-format
 msgid "Alt+N"
-msgstr ""
+msgstr "Alt+E"
 
 #. i18n: file ./confdialog.ui line 265
 #: rc.cpp:85
-#, fuzzy, no-c-format
+#, no-c-format
 msgid ""
 "Show password &pop-up when new\n"
 "encrypted volume is detected"
 msgstr ""
-"Zeige Passwortabfrage wenn ein\n"
+"Zeige &Passwortabfrage wenn ein\n"
 "verschlüsselter Datenträger gefunden wird."
 
 #. i18n: file ./confdialog.ui line 268
 #: rc.cpp:89
 #, no-c-format
 msgid "Alt+P"
-msgstr ""
+msgstr "Alt+P"
 
 #. i18n: file ./confdialog.ui line 297
 #: rc.cpp:92
 #, no-c-format
 msgid "Context Menu"
-msgstr ""
+msgstr "Kontext Menü"
 
 #. i18n: file ./confdialog.ui line 308
 #: rc.cpp:95
 #, no-c-format
 msgid "Style"
-msgstr ""
+msgstr "Stil"
 
 #. i18n: file ./confdialog.ui line 319
 #: rc.cpp:98
 #, no-c-format
 msgid "&Flat"
-msgstr ""
+msgstr "&Flach"
 
 #. i18n: file ./confdialog.ui line 322
 #: rc.cpp:101
 #, no-c-format
 msgid "Alt+F"
-msgstr ""
+msgstr "Alt+F"
 
 #. i18n: file ./confdialog.ui line 330
 #: rc.cpp:104
 #, no-c-format
 msgid "Drop-do&wn"
-msgstr ""
+msgstr "Drop-do&wn"
 
 #. i18n: file ./confdialog.ui line 333
 #. i18n: file ./confdialog.ui line 434
 #: rc.cpp:107 rc.cpp:132
 #, no-c-format
 msgid "Alt+W"
-msgstr ""
+msgstr "Alt+W"
 
 #. i18n: file ./confdialog.ui line 343
 #: rc.cpp:110
 #, no-c-format
 msgid "Grouping"
-msgstr ""
+msgstr "Anordnung"
 
 #. i18n: file ./confdialog.ui line 354
 #: rc.cpp:113
 #, no-c-format
 msgid "Group &by Devices"
-msgstr ""
+msgstr "Anordnen nach &Geräten"
 
 #. i18n: file ./confdialog.ui line 357
 #: rc.cpp:116
 #, no-c-format
 msgid "Alt+B"
-msgstr ""
+msgstr "Alt+G"
 
 #. i18n: file ./confdialog.ui line 365
 #: rc.cpp:119
-#, fuzzy, no-c-format
+#, no-c-format
 msgid "Group by Ac&tions"
-msgstr "Zeige Aktionen"
+msgstr "Anordnen nach &Aktionen"
 
 #. i18n: file ./confdialog.ui line 368
 #: rc.cpp:122
 #, no-c-format
 msgid "Alt+T"
-msgstr ""
+msgstr "Alt+A"
 
 #. i18n: file ./confdialog.ui line 397
 #: rc.cpp:125
-#, fuzzy, no-c-format
+#, no-c-format
 msgid "Passwords"
-msgstr "&Passwort:"
+msgstr "Passwörter:"
 
 #. i18n: file ./confdialog.ui line 431
 #: rc.cpp:129
 #, no-c-format
 msgid "Store passwords in KDE &Wallet"
-msgstr ""
+msgstr "Seichere Passwörter in KDE Brief&tasche"
 
 #. i18n: file ./confdialog.ui line 445
 #: rc.cpp:135
 #, no-c-format
 msgid "Store passwords in &config file (Unencrypted)"
-msgstr ""
+msgstr "Speichere Passwörter in &Konfigurationsdatei (Unverschlüsselt)"
 
 #. i18n: file ./confdialog.ui line 448
 #: rc.cpp:138
 #, no-c-format
 msgid "Alt+C"
-msgstr ""
+msgstr "Alt+K"
 
 #. i18n: file ./confdialog.ui line 477
 #: rc.cpp:141
 #, no-c-format
 msgid "Show notifications for:"
-msgstr ""
+msgstr "Zeige Hinweise für:"
 
 #. i18n: file ./confdialog.ui line 488
 #: rc.cpp:144
-#, fuzzy, no-c-format
+#, no-c-format
 msgid "Automatically enc&rypted devices"
-msgstr ""
-"Datenträger automatisch vor dem\n"
-"Auswerfen verschlüsseln."
+msgstr "Datenträger automatisch &verschlüsseln."
 
 #. i18n: file ./confdialog.ui line 491
 #: rc.cpp:147
 #, no-c-format
 msgid "Alt+R"
-msgstr ""
+msgstr "Alt+V"
 
 #. i18n: file ./confdialog.ui line 499
 #: rc.cpp:150
-#, fuzzy, no-c-format
+#, no-c-format
 msgid "Automatically decr&ypted devices"
-msgstr ""
-"Datenträger automatisch vor dem\n"
-"Auswerfen verschlüsseln."
+msgstr "Datenträger automatisch &entschlüsseln."
 
 #. i18n: file ./confdialog.ui line 502
 #: rc.cpp:153
 #, no-c-format
 msgid "Alt+Y"
-msgstr ""
+msgstr "Alt+E"
 
 #. i18n: file ./confdialog.ui line 510
 #: rc.cpp:156
-#, fuzzy, no-c-format
+#, no-c-format
 msgid "&Manually decrypted devices"
-msgstr ""
-"Datenträger automatisch vor dem\n"
-"Auswerfen verschlüsseln."
+msgstr "Datenträger manuell e&ntschlüsseln"
 
 #. i18n: file ./confdialog.ui line 521
 #: rc.cpp:162
-#, fuzzy, no-c-format
+#, no-c-format
 msgid "&Manually encrypted devices"
-msgstr ""
-"Datenträger automatisch vor dem\n"
-"Auswerfen verschlüsseln."
+msgstr "Datenträger manuell verschlüsseln"
 
 #. i18n: file ./confdialog.ui line 572
 #: rc.cpp:168
 #, no-c-format
 msgid "&Known Devices"
-msgstr ""
+msgstr "&Bekannte Geräte"
 
 #. i18n: file ./confdialog.ui line 625
 #: rc.cpp:171
 #, no-c-format
 msgid "List of all known devices."
-msgstr ""
+msgstr "Liste aller bekannten Geräte"
 
 #. i18n: file ./confdialog.ui line 634
 #: rc.cpp:174
 #, no-c-format
 msgid "Name"
-msgstr ""
+msgstr "Name"
 
 #. i18n: file ./confdialog.ui line 645
 #: rc.cpp:177
 #, no-c-format
 msgid "Block Device"
-msgstr ""
+msgstr "Block Device"
 
 #. i18n: file ./confdialog.ui line 656
 #: rc.cpp:180
-#, fuzzy, no-c-format
+#, no-c-format
 msgid "Ignored"
-msgstr "&Ignorierte:"
+msgstr "Ignorierte"
 
 #. i18n: file ./confdialog.ui line 690
 #: rc.cpp:183
@@ -510,66 +504,70 @@ msgid ""
 "To toggle 'ignore device' mode, double click in the last column.\n"
 "To edit detailed options of the volume, double click on its name."
 msgstr ""
+"Um in den 'Ignoriere Geräte' Modus umzuschalten in die letzte Spalte "
+"doppelklicken.\n"
+"Doppelklick auf den Namen um die detailierten\n"
+"Einstellungen für den Datenträger zu bearbeiten "
 
 #. i18n: file ./devconfdialog.ui line 69
 #: rc.cpp:190
 #, no-c-format
 msgid "Icon"
-msgstr ""
+msgstr "Icon"
 
 #. i18n: file ./devconfdialog.ui line 96
 #: rc.cpp:193
 #, no-c-format
 msgid "Name:"
-msgstr ""
+msgstr "Name:"
 
 #. i18n: file ./devconfdialog.ui line 104
 #: rc.cpp:196
 #, no-c-format
 msgid "name"
-msgstr ""
+msgstr "name"
 
 #. i18n: file ./devconfdialog.ui line 139
 #: rc.cpp:199
 #, no-c-format
 msgid "Device:"
-msgstr ""
+msgstr "Gerät:"
 
 #. i18n: file ./devconfdialog.ui line 147
 #: rc.cpp:202
 #, no-c-format
 msgid "device"
-msgstr ""
+msgstr "Gerät:"
 
 #. i18n: file ./devconfdialog.ui line 182
 #: rc.cpp:205
 #, no-c-format
 msgid "Present:"
-msgstr ""
+msgstr "Verfügbar:"
 
 #. i18n: file ./devconfdialog.ui line 190
 #: rc.cpp:208
 #, no-c-format
 msgid "present"
-msgstr ""
+msgstr "verfügbar:"
 
 #. i18n: file ./devconfdialog.ui line 246
 #: rc.cpp:211
-#, fuzzy, no-c-format
+#, no-c-format
 msgid "&Ignore Volume"
-msgstr "Ignorierte Datenträger"
+msgstr "&Ignorierte Datenträger"
 
 #. i18n: file ./devconfdialog.ui line 249
 #: rc.cpp:214
 #, no-c-format
 msgid "Alt+I"
-msgstr ""
+msgstr "Alt+I"
 
 #. i18n: file ./devconfdialog.ui line 284
 #: rc.cpp:217
 #, no-c-format
 msgid "Actions displayed in Context Menu"
-msgstr ""
+msgstr "Angezeigte Aktionen im Kontext-Menü"
 
 #. i18n: file ./devconfdialog.ui line 326
 #: rc.cpp:220
@@ -591,7 +589,7 @@ msgstr "Verschlüsseln"
 
 #. i18n: file ./devconfdialog.ui line 558
 #: rc.cpp:232
-#, fuzzy, no-c-format
+#, no-c-format
 msgid "Show Options"
 msgstr "Zeige Aktionen"
 
@@ -599,17 +597,17 @@ msgstr "Zeige Aktionen"
 #: rc.cpp:235
 #, no-c-format
 msgid "Visible"
-msgstr ""
+msgstr "Sichtbar"
 
 #. i18n: file ./devconfdialog.ui line 650
 #: rc.cpp:238
 #, no-c-format
 msgid "Hidden"
-msgstr ""
+msgstr "Versteckt"
 
 #. i18n: file ./devconfdialog.ui line 1361
 #: rc.cpp:267
-#, fuzzy, no-c-format
+#, no-c-format
 msgid ""
 "Automatically encrypt\n"
 "on umount"
@@ -621,49 +619,26 @@ msgstr ""
 #: rc.cpp:271
 #, no-c-format
 msgid "Show password pop-up"
-msgstr ""
+msgstr "Zeige Passwort Abfrage"
 
 #. i18n: file ./devconfdialog.ui line 1478
 #: rc.cpp:274
-#, fuzzy, no-c-format
+#, no-c-format
 msgid ""
 "Automatically decrypt\n"
 "(if saved password found)"
 msgstr ""
-"Datenträger automatisch vor dem\n"
-"Auswerfen verschlüsseln."
+"Datenträger automatisch entschlüsseln\n"
+"(falls ein gespeichertes Passwort vorhanden ist)"
 
 #. i18n: file ./devconfdialog.ui line 1999
 #: rc.cpp:299
-#, fuzzy, no-c-format
+#, no-c-format
 msgid "Password"
-msgstr "&Passwort:"
+msgstr "Passwort"
 
 #. i18n: file ./devconfdialog.ui line 2064
 #: rc.cpp:305
-#, fuzzy, no-c-format
+#, no-c-format
 msgid "&Store password"
-msgstr "Falsches Passwort!"
-
-#, fuzzy
-#~ msgid "Manua&lly decr&ypted devices"
-#~ msgstr ""
-#~ "Datenträger automatisch vor dem\n"
-#~ "Auswerfen verschlüsseln."
-
-#, fuzzy
-#~ msgid "P&assword:"
-#~ msgstr "&Passwort:"
-
-#, fuzzy
-#~ msgid "Encr&ypt"
-#~ msgstr "Verschlüsseln"
-
-#~ msgid "No LUKS volumes to display"
-#~ msgstr "Keine LUKS-Datenträger gefunden"
-
-#~ msgid "Misc"
-#~ msgstr "Sonstiges"
-
-#~ msgid "&Known:"
-#~ msgstr "&Bekannt:"
+msgstr "&Speichere Passwort!"

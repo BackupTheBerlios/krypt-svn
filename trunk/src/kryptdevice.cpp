@@ -59,6 +59,7 @@ KryptDevice::KryptDevice ( KryptApp *kryptApp, const QString & udi ) :
   _saveToKWallet = false;
   _waitingToDecrypt = false;
   _waitingToShowPassDialog = false;
+  _waitingToShowConfig = false;
 
   _storePass = false;
 
@@ -458,7 +459,9 @@ void KryptDevice::slotClickDecrypt()
     _waitingToDecrypt = true;
 
     // But not to display password dialog
+    // Or configuration dialog
     _waitingToShowPassDialog = false;
+    _waitingToShowConfig = false;
 
     // And check the wallet!
     checkKWallet();
@@ -467,6 +470,61 @@ void KryptDevice::slotClickDecrypt()
 
   // We don't have the password and we don't use KDE Wallet - show the pass dialog!
   showPassDialog();
+}
+
+void KryptDevice::showConfDialog()
+{
+  if ( _confDialog != 0 )
+  {
+    delete _confDialog;
+    _confDialog = 0;
+  }
+
+  _confDialog = new KryptDevConf ( this );
+
+  connect ( _confDialog, SIGNAL ( signalClosed() ),
+            this, SLOT ( slotClosedConfDialog() ) );
+
+  connect ( _confDialog, SIGNAL ( signalConfigChanged() ),
+            this, SLOT ( slotSaveConfig() ) );
+
+  _confDialog->show();
+}
+
+void KryptDevice::slotClickOptions()
+{
+  // We have the password. Just show the dialog.
+
+  if ( _password.length() > 0 )
+  {
+    showConfDialog();
+    return;
+  }
+
+  // We don't have the password
+
+  if ( _storePass && _kryptApp->useKWallet() )
+  {
+    // But we store the password for this device, and we are using KDE Wallet
+    // Try to get the password from there!
+
+    // Mark that we are waiting for the password to show the conf dialog
+    _waitingToShowConfig = true;
+
+    // But not to display password dialog
+    // Or to decrypt the device
+    _waitingToShowPassDialog = false;
+    _waitingToDecrypt = false;
+
+    // And check the wallet!
+    checkKWallet();
+
+    return;
+  }
+
+  // We don't have the password and we don't use KDE Wallet - show the configuration dialog!
+
+  showConfDialog();
 }
 
 void KryptDevice::slotKWalletReady ( bool isReady )
@@ -550,6 +608,7 @@ void KryptDevice::slotKWalletReady ( bool isReady )
   {
     _waitingToDecrypt = false;
     _waitingToShowPassDialog = false;
+    _waitingToShowConfig = false;
 
     if ( _password.length() > 0 )
     {
@@ -573,12 +632,22 @@ void KryptDevice::slotKWalletReady ( bool isReady )
   {
     _waitingToDecrypt = false;
     _waitingToShowPassDialog = false;
+    _waitingToShowConfig = false;
 
     // showPopup() should be true in this case (since _waitingToShowPassDialog was true)
     // We want to show the password dialog no matter if there was a password in KDE Wallet
     // or not
 
     if ( showPopup() ) showPassDialog();
+  }
+
+  if ( _waitingToShowConfig )
+  {
+    _waitingToDecrypt = false;
+    _waitingToShowPassDialog = false;
+    _waitingToShowConfig = false;
+
+    showConfDialog();
   }
 }
 
@@ -612,6 +681,7 @@ void KryptDevice::checkNewDevice()
       // Mark that we are waiting for the password to decrypt this device
       _waitingToDecrypt = true;
       _waitingToShowPassDialog = false;
+      _waitingToShowConfig = false;
 
       // And check the wallet!
       checkKWallet();
@@ -636,6 +706,7 @@ void KryptDevice::checkNewDevice()
     // Mark that we are waiting for the password to show the password dialog
     _waitingToShowPassDialog = true;
     _waitingToDecrypt = false;
+    _waitingToShowConfig = false;
 
     // And check the wallet!
     checkKWallet();

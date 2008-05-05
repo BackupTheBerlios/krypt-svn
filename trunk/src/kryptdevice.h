@@ -161,6 +161,7 @@ private:
   bool _saveToKWallet;
   bool _waitingToDecrypt;
   bool _waitingToShowPassDialog;
+  bool _waitingToShowConfig;
 
   bool _isInit;
 
@@ -181,6 +182,7 @@ private:
   void recreateCUdi();
   void checkNewDevice();
   void showPassDialog();
+  void showConfDialog();
 
   void doEncrypt();
   void doUMount();

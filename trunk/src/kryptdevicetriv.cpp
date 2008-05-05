@@ -61,25 +61,6 @@ KryptDevice::~KryptDevice()
   }
 }
 
-void KryptDevice::slotClickOptions()
-{
-  if ( _confDialog != 0 )
-  {
-    delete _confDialog;
-    _confDialog = 0;
-  }
-
-  _confDialog = new KryptDevConf ( this );
-
-  connect ( _confDialog, SIGNAL ( signalClosed() ),
-            this, SLOT ( slotClosedConfDialog() ) );
-
-  connect ( _confDialog, SIGNAL ( signalConfigChanged() ),
-            this, SLOT ( slotSaveConfig() ) );
-
-  _confDialog->show();
-}
-
 void KryptDevice::slotPassDecrypt ( )
 {
   if ( _password.length() < 1 ) return;

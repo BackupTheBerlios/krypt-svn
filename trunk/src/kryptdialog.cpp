@@ -140,13 +140,19 @@ void KryptDialog::slotDecrypt()
     if ( ret != KMessageBox::Continue ) return;
   }
 
-  if ( _dlg->cAutoDecrypt->isChecked() )
+  // We want to modify 'auto decrypt' property only if it was modified
+  // Otherwise it would always be changed from the 'default' value to
+  // either 'on' or 'off'
+  if ( _kryptDev->shouldAutoDecrypt() != _dlg->cAutoDecrypt->isChecked() )
   {
-    _kryptDev->setOptAutoDecrypt ( KryptDevice::OptionOn );
-  }
-  else
-  {
-    _kryptDev->setOptAutoDecrypt ( KryptDevice::OptionOff );
+    if ( _dlg->cAutoDecrypt->isChecked() )
+    {
+      _kryptDev->setOptAutoDecrypt ( KryptDevice::OptionOn );
+    }
+    else
+    {
+      _kryptDev->setOptAutoDecrypt ( KryptDevice::OptionOff );
+    }
   }
 
   _kryptDev->setStorePass ( _dlg->cStorePass->isChecked() );

@@ -56,6 +56,7 @@ KryptDevice::KryptDevice ( KryptApp *kryptApp, const QString & udi ) :
 
   _saveToKWallet = false;
   _waitingToDecrypt = false;
+  _waitingToShowPassDialog = false;
 
   _storePass = false;
 
@@ -434,6 +435,9 @@ void KryptDevice::slotClickDecrypt()
     // Mark that we are waiting for the password to decrypt this device
     _waitingToDecrypt = true;
 
+    // But not to display password dialog
+    _waitingToShowPassDialog = false;
+
     // And check the wallet!
     checkKWallet();
     return;
@@ -523,6 +527,7 @@ void KryptDevice::slotKWalletReady ( bool isReady )
   if ( _waitingToDecrypt )
   {
     _waitingToDecrypt = false;
+    _waitingToShowPassDialog = false;
 
     if ( _password.length() > 0 )
     {
@@ -540,6 +545,18 @@ void KryptDevice::slotKWalletReady ( bool isReady )
 
       return;
     }
+  }
+
+  if ( _waitingToShowPassDialog )
+  {
+    _waitingToDecrypt = false;
+    _waitingToShowPassDialog = false;
+
+    // showPopup() should be true in this case (since _waitingToShowPassDialog was true)
+    // We want to show the password dialog no matter if there was a password in KDE Wallet
+    // or not
+
+    if ( showPopup() ) showPassDialog();
   }
 }
 
@@ -571,6 +588,7 @@ void KryptDevice::checkNewDevice()
     {
       // Mark that we are waiting for the password to decrypt this device
       _waitingToDecrypt = true;
+      _waitingToShowPassDialog = false;
 
       // And check the wallet!
       checkKWallet();
@@ -582,6 +600,24 @@ void KryptDevice::checkNewDevice()
 
   // And we don't want any pop-ups - just exit.
   if ( !showPopup() ) return;
+
+  // At this point: We don't use auto-decryption, and user wants to see
+  // a password dialog.
+
+  // We don't have the password, but we want to store it (so it's possible
+  // that it's stored), and we want to use KDE Wallet
+  // Instead of showing pass dialog immediatelly, we will try to read the
+  // password from the KDE Wallet first!
+  if ( _password.length() < 1 && _kryptApp->useKWallet() && _storePass )
+  {
+    // Mark that we are waiting for the password to show the password dialog
+    _waitingToShowPassDialog = true;
+    _waitingToDecrypt = false;
+
+    // And check the wallet!
+    checkKWallet();
+    return;
+  }
 
   // Otherwise, show password dialog!
   showPassDialog();

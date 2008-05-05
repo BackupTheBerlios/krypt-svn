@@ -158,6 +158,7 @@ private:
 
   bool _saveToKWallet;
   bool _waitingToDecrypt;
+  bool _waitingToShowPassDialog;
 
   bool _isInit;
 

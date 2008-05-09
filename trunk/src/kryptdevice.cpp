@@ -21,11 +21,11 @@
 #include <qpixmap.h>
 
 #include <kconfig.h>
-#include <kdebug.h>
 #include <kwallet.h>
 #include <klocale.h>
 #include <kiconloader.h>
 
+#include "kryptdebug.h"
 #include "halbackend.h"
 #include "kryptapp.h"
 #include "kryptglobal.h"
@@ -72,7 +72,10 @@ void KryptDevice::slotHALEvent ( int eventID, const QString& udi )
 {
   if ( udi != _udi )
   {
+#ifdef KRYPT_DEBUG
     kdDebug() << "KryptDevice with UDI: " << _udi << " received event for UDI: " << udi << endl;
+#endif
+
     return;
   }
 
@@ -180,7 +183,9 @@ void KryptDevice::slotHALEvent ( int eventID, const QString& udi )
       break;
 
     default:
+#ifdef KRYPT_DEBUG
       kdDebug() << "Unknown HAL Device EventID: '" << eventID << "'\n";
+#endif
 
       break;
   }
@@ -208,7 +213,10 @@ void KryptDevice::slotPassError ( const QString &udi, const QString &errorName, 
 {
   if ( udi != _udi )
   {
+#ifdef KRYPT_DEBUG
     kdDebug() << "KryptDevice with UDI: " << _udi << " received pass error for UDI: " << udi << endl;
+#endif
+
     return;
   }
 

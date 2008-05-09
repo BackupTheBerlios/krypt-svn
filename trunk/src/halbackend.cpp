@@ -18,12 +18,12 @@
  *   51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.           *
  ***************************************************************************/
 
+#include "kryptdebug.h"
 #include "kryptglobal.h"
 #include "halbackend.h"
 #include "halbackend.moc"
 
 #include <qfile.h>
-#include <kdebug.h>
 
 /* Static instance of this class, for static HAL callbacks */
 HALBackend *HALBackend::s_HALBackend = 0;
@@ -292,33 +292,51 @@ void HALBackend::slotUmountDevice ( const QString& udi )
 
   if ( !msg )
   {
+#ifdef KRYPT_DEBUG
     kdDebug() << "Failed to create new dbus message. UDI: " << clearUdi << endl;
+#endif
+
     goto error;
   }
 
   if ( !dbus_message_append_args ( msg, DBUS_TYPE_ARRAY, DBUS_TYPE_STRING, &poptions, 0, DBUS_TYPE_INVALID ) )
   {
+#ifdef KRYPT_DEBUG
     kdDebug() << "Failed to appendd to dbus message. UDI: " << clearUdi << endl;
+#endif
+
     goto error;
   }
 
   if ( !dbus_connection_send_with_reply ( _dbus_connection, msg, &pcall, -1 ) )
   {
+#ifdef KRYPT_DEBUG
     kdDebug() << __func__ << "(): No Memory for sending message with reply..." << endl;
+#endif
+
     goto error;
   }
 
   if ( !pcall )
   {
+#ifdef KRYPT_DEBUG
     kdDebug() << __func__ << "(): PendingCall is NULL! Connection is disconnected!" << endl;
+#endif
+
     goto error;
   }
 
-  //kdDebug() << __func__ << ": OK" << endl;
+#ifdef KRYPT_DEBUG
+  kdDebug() << __func__ << ": OK" << endl;
+
+#endif
 
   if ( !dbus_pending_call_set_notify ( pcall, HALBackend::cmdCallback, NULL, NULL ) )
   {
+#ifdef KRYPT_DEBUG
     kdDebug() << __func__ << "(): Got some trouble while setting callback function..." << endl;
+#endif
+
     goto error;
   }
 
@@ -331,7 +349,10 @@ error:
   if ( msg )
     dbus_message_unref ( msg );
 
+#ifdef KRYPT_DEBUG
   kdDebug() << __func__ << ": error " << endl;
+
+#endif
 
   return;
 }
@@ -342,7 +363,10 @@ void HALBackend::slotMountDevice ( const QString& udi )
 
   if ( clearUdi.length() < 1 ) return;
 
-  //kdDebug() << __func__ << "(" << udi << ")" << endl;
+#ifdef KRYPT_DEBUG
+  kdDebug() << __func__ << "(" << udi << ")" << endl;
+
+#endif
 
   DBusError error;
 
@@ -362,45 +386,69 @@ void HALBackend::slotMountDevice ( const QString& udi )
 
   if ( !msg )
   {
+#ifdef KRYPT_DEBUG
     kdDebug() << "Failed to create new dbus message. UDI: " << clearUdi << endl;
+#endif
+
     goto error;
   }
 
   if ( !dbus_message_append_args ( msg, DBUS_TYPE_STRING, &empty, DBUS_TYPE_INVALID ) )
   {
+#ifdef KRYPT_DEBUG
     kdDebug() << "Failed to appendd to dbus message. UDI: " << clearUdi << endl;
+#endif
+
     goto error;
   }
 
   if ( !dbus_message_append_args ( msg, DBUS_TYPE_STRING, &empty, DBUS_TYPE_INVALID ) )
   {
+#ifdef KRYPT_DEBUG
     kdDebug() << "Failed to appendd to dbus message. UDI: " << clearUdi << endl;
+#endif
+
     goto error;
   }
 
   if ( !dbus_message_append_args ( msg, DBUS_TYPE_ARRAY, DBUS_TYPE_STRING, &poptions, 0, DBUS_TYPE_INVALID ) )
   {
+#ifdef KRYPT_DEBUG
     kdDebug() << "Failed to appendd to dbus message. UDI: " << clearUdi << endl;
+#endif
+
     goto error;
   }
 
   if ( !dbus_connection_send_with_reply ( _dbus_connection, msg, &pcall, -1 ) )
   {
+#ifdef KRYPT_DEBUG
     kdDebug() << __func__ << "(): No Memory for sending message with reply..." << endl;
+#endif
+
     goto error;
   }
 
   if ( !pcall )
   {
+#ifdef KRYPT_DEBUG
     kdDebug() << __func__ << "(): PendingCall is NULL! Connection is disconnected!" << endl;
+#endif
+
     goto error;
   }
 
-  //kdDebug() << __func__ << ": OK" << endl;
+#ifdef KRYPT_DEBUG
+  kdDebug() << __func__ << ": OK" << endl;
+
+#endif
 
   if ( !dbus_pending_call_set_notify ( pcall, HALBackend::cmdCallback, NULL, NULL ) )
   {
+#ifdef KRYPT_DEBUG
     kdDebug() << __func__ << "(): Got some trouble while setting callback function..." << endl;
+#endif
+
     goto error;
   }
 
@@ -413,7 +461,10 @@ error:
   if ( msg )
     dbus_message_unref ( msg );
 
+#ifdef KRYPT_DEBUG
   kdDebug() << __func__ << ": error " << endl;
+
+#endif
 
   return;
 }
@@ -436,28 +487,43 @@ void HALBackend::slotRemoveDevice ( const QString& udi )
 
   if ( !msg )
   {
+#ifdef KRYPT_DEBUG
     kdDebug() << "Failed to create new dbus message. UDI: " << udi << endl;
+#endif
+
     goto error;
   }
 
 
   if ( !dbus_connection_send_with_reply ( _dbus_connection, msg, &pcall, -1 ) )
   {
+#ifdef KRYPT_DEBUG
     kdDebug() << __func__ << "(): No Memory for sending message with reply..." << endl;
+#endif
+
     goto error;
   }
 
   if ( !pcall )
   {
+#ifdef KRYPT_DEBUG
     kdDebug() << __func__ << "(): PendingCall is NULL! Connection is disconnected!" << endl;
+#endif
+
     goto error;
   }
 
-  // kdDebug() << __func__ << ": OK" << endl;
+#ifdef KRYPT_DEBUG
+  kdDebug() << __func__ << ": OK" << endl;
+
+#endif
 
   if ( !dbus_pending_call_set_notify ( pcall, HALBackend::cmdCallback, NULL, NULL ) )
   {
+#ifdef KRYPT_DEBUG
     kdDebug() << __func__ << "(): Got some trouble while setting callback function..." << endl;
+#endif
+
     goto error;
   }
 
@@ -470,7 +536,10 @@ error:
   if ( msg )
     dbus_message_unref ( msg );
 
+#ifdef KRYPT_DEBUG
   kdDebug() << __func__ << ": error " << endl;
+
+#endif
 
   return;
 }
@@ -491,32 +560,47 @@ void HALBackend::slotSendPassword ( char* udi, const char *password )
 
   if ( !msg )
   {
+#ifdef KRYPT_DEBUG
     kdDebug() << __func__ << "(): Failed to create new dbus message. UDI: " << udi << endl;
+#endif
+
     ok = false;
   }
 
   if ( ok && !dbus_message_append_args ( msg, DBUS_TYPE_STRING, &password, DBUS_TYPE_INVALID ) )
   {
+#ifdef KRYPT_DEBUG
     kdDebug() << __func__ << "(): Failed to setup a encrypt message.\n";
+#endif
+
     ok = false;
   }
 
   if ( ok && !dbus_connection_send_with_reply ( _dbus_connection, msg, &pcall, -1 ) )
   {
+#ifdef KRYPT_DEBUG
     kdDebug() << __func__ << "(): No Memory for sending DBus message with reply...\n";
+#endif
+
     ok = false;
   }
 
   if ( ok && !pcall )
   {
+#ifdef KRYPT_DEBUG
     kdDebug() << __func__ << "(): PendingCall is NULL! DBus connection is disconnected!\n";
+#endif
+
     ok = false;
   }
 
   // Last two parameters only needed for dbus user data ( and freeing it ).
   if ( ok && !dbus_pending_call_set_notify ( pcall, HALBackend::passCallback, udi, NULL ) )
   {
+#ifdef KRYPT_DEBUG
     kdDebug() << __func__ << "(): Got some trouble while setting callback function...\n";
+#endif
+
     ok = false;
   }
 
@@ -606,7 +690,10 @@ void HALBackend::passCallback ( DBusPendingCall* pcall, void *data )
 
   if ( !reply )
   {
+#ifdef KRYPT_DEBUG
     kdDebug() << __func__ << "(): Stolen DBus reply is empty!\n";
+#endif
+
     goto error;
   }
 
@@ -616,7 +703,10 @@ void HALBackend::passCallback ( DBusPendingCall* pcall, void *data )
     dbus_error_init ( &error );
     dbus_set_error_from_message ( &error, reply );
 
-    //kdDebug() << __func__ << "(): Received error: " << error.name << ": " << error.message << endl;
+#ifdef KRYPT_DEBUG
+    kdDebug() << __func__ << "(): Received error: " << error.name << ": " << error.message << endl;
+#endif
+
     errorName = QString ( error.name );
     errorMsg = QString ( error.message );
 
@@ -654,7 +744,10 @@ void HALBackend::cmdCallback ( DBusPendingCall* pcall, void *data )
 
   if ( !reply )
   {
+#ifdef KRYPT_DEBUG
     kdDebug() << __func__ << "(): Stolen DBus reply is empty!\n";
+#endif
+
     goto error;
   }
 
@@ -664,7 +757,10 @@ void HALBackend::cmdCallback ( DBusPendingCall* pcall, void *data )
     dbus_error_init ( &error );
     dbus_set_error_from_message ( &error, reply );
 
-    //kdDebug() << __func__ << "(): Received error: " << error.name << ": " << error.message << endl;
+#ifdef KRYPT_DEBUG
+    kdDebug() << __func__ << "(): Received error: " << error.name << ": " << error.message << endl;
+#endif
+
     errorName = QString ( error.name );
     errorMsg = QString ( error.message );
 
@@ -780,7 +876,9 @@ bool HALBackend::initHAL()
 
   if ( !_halContext )
   {
+#ifdef KRYPT_DEBUG
     kdDebug() << __func__ << "(): Failed to initialize HAL!\n";
+#endif
 
     return false;
   }
@@ -804,14 +902,19 @@ bool HALBackend::initHAL()
 
     _halContext = NULL;
 
+#ifdef KRYPT_DEBUG
     kdDebug() << __func__ << "(): Failed to init HAL context!\n";
+
+#endif
 
     return false;
   }
 
   if ( !libhal_device_property_watch_all ( _halContext, &error ) )
   {
+#ifdef KRYPT_DEBUG
     kdDebug() << __func__ << "(): Failed to watch HAL properties!\n";
+#endif
 
     return false;
   }
@@ -831,8 +934,11 @@ void HALBackend::closeHAL()
   {
     if ( dbus_error_is_set ( &error ) )
     {
+#ifdef KRYPT_DEBUG
       kdDebug() << __func__ << "(): DBus Error: "
       << error.name << "; Message: " << error.message << endl;
+#endif
+
       dbus_error_free ( &error );
     }
 
@@ -841,7 +947,9 @@ void HALBackend::closeHAL()
 
   if ( !libhal_ctx_free ( _halContext ) )
   {
+#ifdef KRYPT_DEBUG
     kdDebug() << __func__ << "(): Freeing of hal context failed...\n";
+#endif
   }
 
   _halContext = 0;

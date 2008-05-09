@@ -18,10 +18,10 @@
  *   51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.           *
  ***************************************************************************/
 
-#include <kdebug.h>
 #include <klocale.h>
 #include <qmessagebox.h>
 
+#include "kryptdebug.h"
 #include "kryptglobal.h"
 #include "kryptapp.h"
 #include "kryptapp.moc"
@@ -124,7 +124,9 @@ void KryptApp::slotHALEvent ( int eventID, const QString& udi )
 {
   KryptDevice *dev = 0;
 
+#ifdef KRYPT_DEBUG
   kdDebug() << "HAL Device Event: ID: '" << getHalDevEventDesc ( eventID ) << "'; UDI: '" << udi << "'\n";
+#endif
 
   if ( eventID == KRYPT_HAL_DEV_EVENT_REMOVED )
   {
@@ -168,7 +170,9 @@ void KryptApp::slotError ( const QString &, const QString &, const QString &erro
 
 void KryptApp::slotNewInfo ( const QString &info )
 {
+#ifdef KRYPT_DEBUG
   kdDebug() << info << endl;
+#endif
 }
 
 KryptDevice * KryptApp::getDevice ( const QString &udi, bool create )

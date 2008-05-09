@@ -4,8 +4,8 @@ SUBDIRS = pics
 INCLUDES = $(DBUS_CFLAGS) $(HAL_CFLAGS) $(all_includes)
 
 # these are the headers for your project
-noinst_HEADERS = halbackend.h kryptapp.h kryptconf.h kryptdevconf.h \
-	kryptdevice.h kryptdevitem.h kryptdialog.h kryptglobal.h kryptsystray.h
+noinst_HEADERS = halbackend.h kryptapp.h kryptconf.h kryptdebug.h \
+	kryptdevconf.h kryptdevice.h kryptdevitem.h kryptdialog.h kryptglobal.h kryptsystray.h
 
 # let automoc handle all of the meta source files (moc)
 METASOURCES = AUTO

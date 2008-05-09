@@ -22,7 +22,6 @@
 
 #include <kaction.h>
 #include <kapplication.h>
-#include <kdebug.h>
 #include <khelpmenu.h>
 #include <kiconloader.h>
 #include <klocale.h>

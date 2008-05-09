@@ -18,46 +18,14 @@
  *   51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.           *
  ***************************************************************************/
 
-#ifndef _KRYPT_DIALOG_H_
-#define _KRYPT_DIALOG_H_
+#ifndef _KRYPT_DEBUG_H_
+#define _KRYPT_DEBUG_H_
 
-#include <klocale.h>
-#include <kconfig.h>
-#include <kdialogbase.h>
-#include <kiconloader.h>
+//#define KRYPT_DEBUG
+#undef KRYPT_DEBUG
 
-#include <qlineedit.h>
-#include <qlabel.h>
-#include <qgroupbox.h>
+#ifdef KRYPT_DEBUG
+#include <kdebug.h>
+#endif
 
-class DecryptDialog;
-
-class KryptDevice;
-
-class KryptDialog : public KDialogBase
-{
-  Q_OBJECT
-
-public:
-  KryptDialog ( KryptDevice *kryptDev );
-  ~KryptDialog();
-
-  QString getPassword();
-
-signals:
-  void signalClosed();
-
-public slots:
-  void slotPassError ( const QString &errName, const QString &errMsg );
-
-protected slots:
-  void slotPasswordChanged ( const QString &text );
-  void slotCancel();
-  void slotDecrypt();
-
-private:
-  KryptDevice *_kryptDev;
-  DecryptDialog *_dlg;
-};
-
-#endif // _KRYPT_DIALOG_H_
+#endif

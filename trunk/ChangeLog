@@ -1,0 +1,21 @@
+0.2
+=====
+ * Modified Krypt's Systray menu to work in 4 different modes (grouped by
+    actions, or by devices, and flat or with sub menus)
+ * Systray menu activated with right click will have all the actions and
+    configuration options visible. When it is activated with left click,
+    only actions are shown.
+ * Added help menu with application information, and bug submission form.
+ * Corrected issues with talking to HAL - now map/unmap events should be
+    recognized properly.
+ * Added per-device configuration dialog
+ * Improved global configuration dialog
+ * Non removable, new (unknown before) devices are ignored by default
+    (they can be re-enabled in their configuration)
+ * Passwords for devices can be saved either in configuration file
+    (unencrypted), or in KDE Wallet
+ * Added notifications for manual and auto volume encryptions
+    and decryptions
+ * Added auto decryption of devices if password is stored
+ * Added German translation - Thanks to  Robert Jähne
+ * Added Polish translation

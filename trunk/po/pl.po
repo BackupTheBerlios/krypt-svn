@@ -6,7 +6,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: pl\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2008-05-04 17:37-0400\n"
+"POT-Creation-Date: 2008-05-09 18:27-0400\n"
 "PO-Revision-Date: 2008-05-04 17:37-0400\n"
 "Last-Translator: Jakub Schmidtke <sjakub@gmail.com>\n"
 "Language-Team:  <en@li.org>\n"
@@ -54,11 +54,11 @@ msgstr ""
 "niebezpieczne!\n"
 "Zalecane jest uaktywnienie Portfela KDE w ogólnych opcjach programu Krypt."
 
-#: kryptdevice.cpp:119
+#: kryptdevice.cpp:126
 msgid "Volume is now: Decrypted"
 msgstr "Wolumin został odszyfrowany"
 
-#: kryptdevice.cpp:134
+#: kryptdevice.cpp:145
 msgid "Volume is now: Encrypted"
 msgstr "Wolumin został zaszyfrowany"
 
@@ -89,42 +89,42 @@ msgstr ""
 msgid "%1 is already decrypted!"
 msgstr "%1 już jest odszyfrowany!"
 
-#: kryptsystray.cpp:59
+#: kryptsystray.cpp:58
 msgid "Control LUKS encrypted volumes"
 msgstr "Obsługa woluminów zaszyfrowanych przy pomocy systemu LUKS"
 
-#: kryptsystray.cpp:154 kryptsystray.cpp:166 kryptsystray.cpp:357
-#: kryptsystray.cpp:370
+#: kryptsystray.cpp:153 kryptsystray.cpp:165 kryptsystray.cpp:356
+#: kryptsystray.cpp:369
 msgid "Umount Volume"
 msgstr "Odmontuj Wolumin"
 
-#: kryptsystray.cpp:189 kryptsystray.cpp:201 kryptsystray.cpp:385
-#: kryptsystray.cpp:398
+#: kryptsystray.cpp:188 kryptsystray.cpp:200 kryptsystray.cpp:384
+#: kryptsystray.cpp:397
 msgid "Mount Volume"
 msgstr "Zamontuj Wolumin"
 
-#: kryptsystray.cpp:224 kryptsystray.cpp:236 kryptsystray.cpp:413
-#: kryptsystray.cpp:426
+#: kryptsystray.cpp:223 kryptsystray.cpp:235 kryptsystray.cpp:412
+#: kryptsystray.cpp:425
 msgid "Encrypt Volume"
 msgstr "Zaszyfruj Wolumin"
 
-#: kryptsystray.cpp:259 kryptsystray.cpp:271 kryptsystray.cpp:441
-#: kryptsystray.cpp:454
+#: kryptsystray.cpp:258 kryptsystray.cpp:270 kryptsystray.cpp:440
+#: kryptsystray.cpp:453
 msgid "Decrypt Volume"
 msgstr "Odszyfruj Wolumin"
 
 #. i18n: file ./devconfdialog.ui line 24
-#: kryptsystray.cpp:296 kryptsystray.cpp:308 kryptsystray.cpp:469
-#: kryptsystray.cpp:482 rc.cpp:187
+#: kryptsystray.cpp:295 kryptsystray.cpp:307 kryptsystray.cpp:468
+#: kryptsystray.cpp:481 rc.cpp:187
 #, no-c-format
 msgid "Volume Options"
 msgstr "Opcje Woluminu"
 
-#: kryptsystray.cpp:514
+#: kryptsystray.cpp:513
 msgid "Nothing to display..."
 msgstr "Nic do wyświetlenia..."
 
-#: kryptsystray.cpp:522
+#: kryptsystray.cpp:521
 msgid "Configure Krypt..."
 msgstr "Konfiguruj program Krypt..."
 
